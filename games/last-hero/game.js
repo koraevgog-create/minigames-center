@@ -1,9 +1,9 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),canvas=$('arena'),ctx=canvas.getContext('2d'),W=960,H=600;
-let state='ready',hero,enemies=[],gems=[],fx=[],keys={},pointer=null,wave=1,spawned=0,spawnTime=0,time=0,kills=0,last=performance.now(),bossSpawned=false,transition=0,projectiles=[],slashes=[],dashTimer=0,dashCooldown=0,critChance=.15;
+let state='ready',hero,enemies=[],gems=[],fx=[],keys={},pointer=null,wave=1,spawned=0,spawnTime=0,time=0,kills=0,last=performance.now(),bossSpawned=false,transition=0,projectiles=[],slashes=[],dashTimer=0,dashCooldown=0,critChance=.15,dashRequested=false;
 const rand=(a,b)=>a+Math.random()*(b-a);
 const types={goblin:{hp:34,speed:100,damage:6,radius:15,xp:13,color:'#7eae66'},skeleton:{hp:76,speed:69,damage:10,radius:17,xp:24,color:'#d4d2c5'},archer:{hp:45,speed:85,damage:8,radius:16,xp:19,color:'#acd48b'},elite:{hp:145,speed:92,damage:14,radius:22,xp:40,color:'#d99155'},orc:{hp:540,speed:52,damage:22,radius:32,xp:150,color:'#af715b'}};
-function fresh(){critChance=.15;hero={x:W/2,y:H/2,hp:100,maxHp:100,damage:18,speed:240,range:112,rate:.52,cool:0,level:1,xp:0,xpGoal:38,fire:0,armor:0};enemies=[];gems=[];fx=[];projectiles=[];slashes=[];dashTimer=0;dashCooldown=0;keys={};pointer=null;wave=1;spawned=0;spawnTime=.8;time=0;kills=0;bossSpawned=false;transition=0;state='ready';$('overlay').hidden=true;$('start').disabled=false;info('Нажми «Начать игру», затем двигайся клавишами WASD.');hud()}
+function fresh(){dashRequested=false;critChance=.15;hero={x:W/2,y:H/2,hp:100,maxHp:100,damage:18,speed:240,range:112,rate:.52,cool:0,level:1,xp:0,xpGoal:38,fire:0,armor:0};enemies=[];gems=[];fx=[];projectiles=[];slashes=[];dashTimer=0;dashCooldown=0;keys={};pointer=null;wave=1;spawned=0;spawnTime=.8;time=0;kills=0;bossSpawned=false;transition=0;state='ready';$('overlay').hidden=true;$('start').disabled=false;info('Нажми «Начать игру», затем двигайся клавишами WASD.');hud()}
 function info(text){$('status').textContent=text}
 function hud(){for(const [id,value] of Object.entries({hp:Math.ceil(hero.hp)+' / '+hero.maxHp,level:hero.level,wave:wave+' / 5',kills,timer:String(Math.floor(time/60)).padStart(2,'0')+':'+String(Math.floor(time%60)).padStart(2,'0')}))$(id).textContent=value;$('experienceBar').style.width=Math.min(100,hero.xp/hero.xpGoal*100)+'%';$('pause').textContent=state==='paused'?'▶ Продолжить':'⏸ Пауза';$('stats').replaceChildren();for(const str of ['⚔️ Урон: '+Math.round(hero.damage),'🗡️ Удары: '+(1/hero.rate).toFixed(1)+' в секунду','🏃 Скорость: '+Math.round(hero.speed),'❤️ Макс. здоровье: '+hero.maxHp,'🛡️ Защита: '+hero.armor,'🎯 Крит: '+Math.round(critChance*100)+'%','💨 Рывок: '+(dashCooldown===0?'готов':dashCooldown.toFixed(1)+' с')]){const div=document.createElement('div');div.textContent=str;$('stats').appendChild(div)}}
 function burst(x,y,color,n=9){for(let i=0;i<n;i++){const a=rand(0,Math.PI*2),v=rand(40,145);fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:.45,color})}}
@@ -22,7 +22,7 @@ function start(){if(state==='ready'){state='playing';$('start').disabled=true;in
 function update(dt){time+=dt;hero.cool=Math.max(0,hero.cool-dt);dashTimer=Math.max(0,dashTimer-dt);dashCooldown=Math.max(0,dashCooldown-dt);
 let dx=Number(!!(keys.KeyD||keys.ArrowRight))-Number(!!(keys.KeyA||keys.ArrowLeft)),dy=Number(!!(keys.KeyS||keys.ArrowDown))-Number(!!(keys.KeyW||keys.ArrowUp));
 if(pointer){dx=pointer.x-hero.x;dy=pointer.y-hero.y;if(Math.hypot(dx,dy)<20){dx=0;dy=0}}
-const len=Math.hypot(dx,dy);if(len&&keys.ShiftLeft&&dashCooldown===0){dashCooldown=3;dashTimer=.22;burst(hero.x,hero.y,'#7bdff8',12)}if(len){let moveSpeed=hero.speed*(dashTimer>0?2.4:1);hero.x=Math.max(22,Math.min(W-22,hero.x+dx/len*moveSpeed*dt));hero.y=Math.max(22,Math.min(H-22,hero.y+dy/len*moveSpeed*dt))}
+const len=Math.hypot(dx,dy);if(len&&(keys.ShiftLeft||dashRequested)&&dashCooldown===0){dashCooldown=3;dashTimer=.22;dashRequested=false;burst(hero.x,hero.y,'#7bdff8',12)}if(len){let moveSpeed=hero.speed*(dashTimer>0?2.4:1);hero.x=Math.max(22,Math.min(W-22,hero.x+dx/len*moveSpeed*dt));hero.y=Math.max(22,Math.min(H-22,hero.y+dy/len*moveSpeed*dt))}
 const quota=wave===5?13:8+wave*3;
 spawnTime-=dt;
 if(spawned<quota&&spawnTime<=0){spawn();spawnTime=Math.max(.35,1.05-wave*.1)}
@@ -48,6 +48,6 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(state==='
 window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.code==='Space'&&!e.repeat&&['playing','paused'].includes(state)){state=state==='paused'?'playing':'paused';hud()}});window.addEventListener('keyup',e=>{keys[e.code]=false});window.addEventListener('blur',()=>{if(state==='playing'){state='paused';hud()}});
 function setPointer(e){const r=canvas.getBoundingClientRect();pointer={x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
 canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);setPointer(e)});canvas.addEventListener('pointermove',e=>{if(pointer)setPointer(e)});canvas.addEventListener('pointerup',()=>pointer=null);canvas.addEventListener('pointercancel',()=>pointer=null);
-$('start').onclick=start;$('pause').onclick=()=>{if(['playing','paused'].includes(state)){state=state==='playing'?'paused':'playing';hud()}};$('restart').onclick=()=>{fresh()};
+$('start').onclick=start;$('pause').onclick=()=>{if(['playing','paused'].includes(state)){state=state==='playing'?'paused':'playing';hud()}};$('restart').onclick=()=>{fresh()};$('dash').onclick=()=>{if(state==='playing')dashRequested=true};
 fresh();requestAnimationFrame(frame);
 })();
