@@ -1,8 +1,8 @@
 <!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101827"><title>Последний герой — MiniGames Center</title><link rel="stylesheet" href="styles.css"></head><body>
-<div class="app"><header><a href="../../">← Все игры</a><strong>⚔️ ПОСЛЕДНИЙ ГЕРОЙ</strong><span>Версия 0.2</span></header>
+<div class="app"><header><a href="../../">← Все игры</a><strong>⚔️ ПОСЛЕДНИЙ ГЕРОЙ</strong><span>Версия 0.3</span></header>
 <div class="hud"><div>❤️ Здоровье <b id="hp"></b></div><div>⭐ Уровень <b id="level"></b></div><div>🌊 Волна <b id="wave"></b></div><div>💀 Убито <b id="kills"></b></div><div>⏱ Время <b id="timer"></b></div></div>
 <div class="experience"><div id="experienceBar"></div></div>
 <div class="layout"><div class="field"><canvas id="arena" width="960" height="600" aria-label="Игровая арена"></canvas><div class="status" id="status" role="status">Нажми «Начать игру».</div></div>
-<aside><h2>Последний рыцарь</h2><p>Переживи пять волн и победи вождя орков. Меч атакует ближайшего врага автоматически.</p><div id="stats" class="stats"></div><button id="start" class="primary">▶ Начать игру</button><button id="pause">⏸ Пауза</button><button id="dash">💨 Рывок (Shift)</button><button id="restart">↻ Новый забег</button><h3>Управление</h3><p>WASD или стрелки — движение. Пробел — пауза, Shift — рывок для уклонения. На телефоне удерживай палец на арене и веди героя.</p></aside></div></div>
+<aside><h2>Последний рыцарь</h2><p>Переживи пять волн и победи вождя орков. Теперь у героя есть основа RPG-инвентаря.</p><div id="stats" class="stats"></div><div id="inventory" class="stats"></div><button id="start" class="primary">▶ Начать игру</button><button id="pause">⏸ Пауза</button><button id="dash">💨 Рывок (Shift)</button><button id="restart">↻ Новый забег</button><h3>Управление</h3><p>WASD или стрелки — движение. Пробел — пауза, Shift — рывок.</p></aside></div></div>
 <div id="overlay" class="overlay" hidden><div class="dialog"><h2 id="modalTitle"></h2><p id="modalText"></p><div id="choices"></div></div></div>
-<script src="game.js" defer></script></body></html>
+<script src="inventory.js" defer></script><script src="game.js" defer></script><script>window.addEventListener('load',()=>window.RPGInventory&&window.RPGInventory.render())</script></body></html>
