@@ -1,0 +1,6 @@
+[
+  {"id":"rust_sword","name":"Ржавый меч","rarity":"common","damage":0},
+  {"id":"guard_sword","name":"Меч стража","rarity":"rare","damage":15,"crit":5},
+  {"id":"flame_blade","name":"Пылающий клинок","rarity":"epic","damage":25,"fire":10},
+  {"id":"orc_axe","name":"Топор вождя орков","rarity":"legendary","damage":35,"hp":20}
+]
