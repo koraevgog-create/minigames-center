@@ -7,6 +7,7 @@ window.RPGInventory={
  reset(){this.items=[];this.gold=0;this.potions=1;this.weapon={name:'Ржавый меч',slot:'weapon',damage:0,rarity:'⚪ Обычный'};this.armor={name:'Без доспеха',slot:'armor',armor:0,rarity:'⚪ Обычный'};this.render()},
  bonus(){let b={damage:0,armor:0,hp:0,crit:0,fire:0};for(const item of [this.weapon,this.armor])for(const k of Object.keys(b))b[k]+=Number(item[k]||0);return b},
  addGold(n){this.gold+=n;this.render()},
+ spendGold(n){if(n<0||this.gold<n)return false;this.gold-=n;this.render();return true},
  addPotion(n=1){this.potions+=n;this.render()},
  usePotion(){if(this.potions<=0)return false;if(!this.onPotion||!this.onPotion())return false;this.potions--;this.render();return true},
  add(item){this.items.push({...item});this.render()},
