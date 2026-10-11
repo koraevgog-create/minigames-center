@@ -59,6 +59,17 @@ ctx.font='27px serif';for(let i=0;i<20;i++){const x=(i*193+35)%W,y=(i*137+55)%H;
 for(const g of gems){ctx.fillStyle='#75dff8';ctx.beginPath();ctx.arc(g.x,g.y,6,0,7);ctx.fill()}
 ctx.textAlign='center';ctx.textBaseline='middle';for(const hz of hazards){const progress=Math.max(0,hz.delay)/1.25;ctx.beginPath();ctx.arc(hz.x,hz.y,hz.radius,0,Math.PI*2);ctx.fillStyle=hz.resolved?'#ff73365b':'#ea40374d';ctx.fill();ctx.strokeStyle=hz.resolved?'#ffce8a':'#ff7568';ctx.lineWidth=5;ctx.stroke();if(!hz.resolved){ctx.beginPath();ctx.arc(hz.x,hz.y,hz.radius*(1-progress),0,Math.PI*2);ctx.strokeStyle='#ffe2c4';ctx.lineWidth=3;ctx.stroke()}}for(const chest of chests){ctx.font='36px serif';ctx.fillText('📦',chest.x,chest.y)}for(const drop of loot){ctx.font='27px serif';ctx.fillText(drop.kind==='gold'?'🪙':drop.kind==='potion'?'🧪':'🎁',drop.x,drop.y)}for(const e of enemies){ctx.font=(e.kind==='orc'?56:31)+'px serif';ctx.fillText(e.kind==='orc'?'👹':e.kind==='skeleton'?'💀':e.kind==='archer'?'🏹':e.kind==='elite'?'👹':'👺',e.x,e.y);ctx.fillStyle='#59292a';ctx.fillRect(e.x-21,e.y-e.radius-14,42,5);ctx.fillStyle='#9edc83';ctx.fillRect(e.x-21,e.y-e.radius-14,42*Math.max(0,e.hp/e.maxHp),5)}
 for(const shot of projectiles){ctx.fillStyle='#ffd37c';ctx.beginPath();ctx.arc(shot.x,shot.y,6,0,Math.PI*2);ctx.fill()}for(const s of slashes){ctx.globalAlpha=s.life/.2;ctx.strokeStyle=s.crit?'#ff6558':'#ffe1a1';ctx.lineWidth=s.crit?9:5;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.tx,s.ty);ctx.stroke()}ctx.globalAlpha=1;ctx.strokeStyle='#ffebb027';ctx.beginPath();ctx.arc(hero.x,hero.y,hero.range,0,Math.PI*2);ctx.stroke();ctx.font='44px serif';ctx.fillText('🛡️',hero.x,hero.y);
+// Floating player HP bar — drawn above the hero in world coordinates.
+const barW=68,barH=8,barX=hero.x-barW/2,barY=Math.max(8,hero.y-48);
+const hpRatio=Math.max(0,Math.min(1,hero.hp/Math.max(1,hero.maxHp)));
+ctx.fillStyle='#0d1b27';ctx.fillRect(barX-2,barY-2,barW+4,barH+4);
+ctx.fillStyle='#732f38';ctx.fillRect(barX,barY,barW,barH);
+ctx.fillStyle=hpRatio>.55?'#66dd92':hpRatio>.25?'#f5bd5b':'#ef6666';
+ctx.fillRect(barX,barY,barW*hpRatio,barH);
+ctx.strokeStyle='#e7edf0';ctx.lineWidth=1;ctx.strokeRect(barX-.5,barY-.5,barW+1,barH+1);
+ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.textBaseline='bottom';
+ctx.fillStyle='#ffffff';ctx.shadowColor='#061019';ctx.shadowBlur=3;
+ctx.fillText(Math.ceil(hero.hp)+' / '+hero.maxHp,hero.x,barY-3);ctx.shadowBlur=0;ctx.textBaseline='middle';
 for(const p of fx){ctx.globalAlpha=Math.max(0,p.t/.45);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,5,5)}ctx.globalAlpha=1;
 const shade=ctx.createRadialGradient(hero.x,hero.y,90,hero.x,hero.y,560);shade.addColorStop(0,'#06132300');shade.addColorStop(1,'#07101cba');ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
 if(state==='paused'){ctx.fillStyle='#071423b9';ctx.fillRect(0,0,W,H);ctx.font='bold 48px system-ui';ctx.fillStyle='#f6eacb';ctx.fillText('ПАУЗА',W/2,H/2)}}
