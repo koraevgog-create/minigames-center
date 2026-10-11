@@ -2,3 +2,5 @@
 #inventory{padding:12px;background:#22374b;border:1px solid #56748d;border-radius:12px;max-height:340px;overflow:auto}#inventory strong{color:#f2d391}.inventory-line{padding:8px 0;border-bottom:1px solid #426077;font-size:12px;line-height:1.5}.inventory-item{display:flex;align-items:center;gap:5px;padding:7px 0;border-bottom:1px solid #426077;font-size:12px}.inventory-item span{flex:1;line-height:1.4}.inventory-item button{width:auto;min-width:70px;margin:0;padding:7px;font-size:12px}
 
 #heal{background:#286851;border-color:#61b99c}#inventory .inventory-item:first-of-type{background:#294855;padding:9px;border-radius:8px;margin-top:9px}
+
+.merchant-gold{font-weight:800;color:#f5d18c;background:#284157;padding:12px;border-radius:9px;margin-top:12px}.dialog .merchant-offer{font-size:13px;line-height:1.4}.dialog .merchant-continue{background:#26774f;border-color:#87c99f;text-align:center;margin-top:16px}
