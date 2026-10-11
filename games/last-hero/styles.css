@@ -10,3 +10,5 @@
 #shock{background:#205b75;border-color:#6dbcdc}#shock:disabled{opacity:.62}
 
 .target-label{padding:11px 10px;margin-top:12px;background:#283b50;border:1px solid #937c49;border-radius:9px;color:#ffe1a1;font-weight:700}#selectTarget{background:#66512c;border-color:#d5b86d}#clearTarget{background:#3a4758;border-color:#7b8a9c}
+
+.awards{display:grid;gap:6px;margin-bottom:15px}.award{padding:8px 10px;background:#1d3041;color:#93a3ad;border:1px solid #334d61;border-radius:8px;font-size:12px}.award.unlocked{color:#ffe3a5;background:#394129;border-color:#8d8548}.inventory-item{flex-wrap:wrap}.inventory-item .sell-item{background:#75502f;border-color:#b9935e;min-width:100px}
