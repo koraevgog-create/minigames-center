@@ -8,3 +8,5 @@
 .boss-panel{padding:10px 14px;border:1px solid #bc654c;border-radius:12px;background:#3a2330;margin:8px 0}.boss-panel[hidden]{display:none}.boss-title{display:flex;justify-content:space-between;gap:12px;color:#ffd0ae;padding-bottom:7px}.boss-health{height:13px;background:#48232a;border-radius:9px;overflow:hidden}.boss-health div{height:100%;width:100%;background:linear-gradient(90deg,#e34e48,#ff9a56);transition:width .16s}
 
 #shock{background:#205b75;border-color:#6dbcdc}#shock:disabled{opacity:.62}
+
+.target-label{padding:11px 10px;margin-top:12px;background:#283b50;border:1px solid #937c49;border-radius:9px;color:#ffe1a1;font-weight:700}#selectTarget{background:#66512c;border-color:#d5b86d}#clearTarget{background:#3a4758;border-color:#7b8a9c}
