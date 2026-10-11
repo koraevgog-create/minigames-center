@@ -6,3 +6,5 @@
 .merchant-gold{font-weight:800;color:#f5d18c;background:#284157;padding:12px;border-radius:9px;margin-top:12px}.dialog .merchant-offer{font-size:13px;line-height:1.4}.dialog .merchant-continue{background:#26774f;border-color:#87c99f;text-align:center;margin-top:16px}
 
 .boss-panel{padding:10px 14px;border:1px solid #bc654c;border-radius:12px;background:#3a2330;margin:8px 0}.boss-panel[hidden]{display:none}.boss-title{display:flex;justify-content:space-between;gap:12px;color:#ffd0ae;padding-bottom:7px}.boss-health{height:13px;background:#48232a;border-radius:9px;overflow:hidden}.boss-health div{height:100%;width:100%;background:linear-gradient(90deg,#e34e48,#ff9a56);transition:width .16s}
+
+#shock{background:#205b75;border-color:#6dbcdc}#shock:disabled{opacity:.62}
