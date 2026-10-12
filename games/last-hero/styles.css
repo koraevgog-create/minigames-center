@@ -56,3 +56,40 @@ button kbd{margin-left:6px;vertical-align:middle}kbd{display:inline-flex;align-i
 #pause:not(:has(kbd))::after,#shock:not(:has(kbd))::after{display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;margin-left:6px;border:1px solid #7890a6;background:#19293a;color:#e7efff;border-radius:5px;font:700 11px system-ui}
 #pause:not(:has(kbd))::after{content:"Space"}
 #shock:not(:has(kbd))::after{content:"E"}
+
+/* v0.4.3 - handcrafted dark fantasy interface skin */
+:root{--gold:#e4c384;--parchment:#f0dfb9;--ink:#0d1920;--steel:#658d90}
+body{background:radial-gradient(ellipse at 45% -15%,#314840 0%,#16252c 44%,#091219 100%);color:#e8deca}
+.topbar{border-bottom:1px solid #a38b5545;margin-bottom:7px}
+.topbar strong{font-family:Georgia,serif;color:#f7d99e;text-shadow:0 2px 13px #dfad5d52;letter-spacing:.12em}
+.topbar a{color:#d9c99e}
+.hud>div{background:linear-gradient(145deg,#304642,#172a34);border:1px solid #8f815553;box-shadow:inset 0 1px #e4c2841a,0 2px 7px #0004;color:#b5c6bd}
+.hud b{color:#ffe0a0}
+.experience{background:#15232b;box-shadow:inset 0 1px 3px #0008}
+.experience>div{background:linear-gradient(90deg,#507b8f,#95d4ce);box-shadow:0 0 12px #8addd56a}
+.field{border:2px solid #8a805d;border-radius:10px;background:#1b302f;box-shadow:0 0 0 3px #101e24,0 8px 25px #0007}
+.status{background:linear-gradient(90deg,#1e3438,#19272e);color:#ead6a8;border-top:1px solid #8c825449}
+.game-panel{background:linear-gradient(155deg,#283c3b,#172931 48%,#111e2c);border:2px solid #75694a;border-radius:11px;box-shadow:inset 0 1px #cfae7144,0 4px 19px #0007}
+.panel-header h2{font-family:Georgia,serif;letter-spacing:.03em;color:#f3d69d}
+.eyebrow{color:#b5ad8b}
+.game-panel button{background:linear-gradient(165deg,#425961,#253b48);border:1px solid #78817a;color:#f3e6cd;box-shadow:inset 0 1px #ffffff18}
+.game-panel button.primary{background:linear-gradient(165deg,#467c58,#284a3b);border-color:#b1ad74}
+.game-panel button:hover:not(:disabled){border-color:#e1c187;filter:brightness(1.08)}
+.game-panel #heal{background:linear-gradient(155deg,#377865,#264d4b)}
+.game-panel #shock{background:linear-gradient(155deg,#3b647d,#223a52)}
+.game-panel #selectTarget{background:linear-gradient(155deg,#786446,#4a402e)}
+.tabs .tab{background:#20363c;border-color:#5a665b;color:#bac9bb}
+.tabs .tab.active{background:linear-gradient(160deg,#716147,#483c2d);border-color:#e1bd7e;color:#fff0d1}
+.tab-content{background:linear-gradient(145deg,#132730,#12232b);border-color:#796c4e;box-shadow:inset 0 2px 13px #0004}
+#inventory,#stats,#achievements{color:#e2dcc9}
+#inventory{background:transparent}
+#stats>div{background:#283b40;border:1px solid #a08c4930}
+.inventory-line,.inventory-item{border-color:#736f5339}
+.inventory-item .sell-item{background:#665035;border-color:#b39564}
+.target-label{background:#2d3d3d!important;border-color:#998452!important;color:#f4db9f}
+.boss-panel{background:linear-gradient(90deg,#452c2d,#251f2e);border-color:#b9755a}
+.overlay{background:#081118e9;backdrop-filter:blur(5px)}
+.dialog{background:linear-gradient(155deg,#34423d,#152733);border:2px solid #d2ae6c;box-shadow:0 0 0 4px #161e24,0 25px 90px #000c}
+.dialog h2{font-family:Georgia,serif}
+.dialog button{background:linear-gradient(150deg,#3d5960,#253745)}
+.help-pane kbd,kbd{background:#26353d;border-color:#9b946d;color:#ffe5a7}
