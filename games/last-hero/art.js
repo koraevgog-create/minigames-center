@@ -1,7 +1,6 @@
 // Hand-drawn vector game icons. No emoji glyphs or third-party assets.
 (()=>{
 'use strict';
-const P=Path2D;
 function poly(ctx,pts,fill,stroke='#13202b',w=2){ctx.beginPath();ctx.moveTo(...pts[0]);for(let k=1;k<pts.length;k++)ctx.lineTo(...pts[k]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=w;ctx.stroke()}}
 function circle(ctx,x,y,r,fill,stroke='#152632',w=2){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.lineWidth=w;ctx.strokeStyle=stroke;ctx.stroke()}}
 function rounded(ctx,x,y,w,h,r,fill,stroke='#172530'){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}}
@@ -13,11 +12,12 @@ if(['hero','goblin','skeleton','archer','shaman','elite','orc'].includes(kind)){
 ctx.shadowBlur=0;ctx.shadowOffsetY=0;
 switch(kind){
 case 'hero':{
+  ctx.save();ctx.rotate(Math.sin(t*6+x*.02)*.018);
   poly(ctx,[[-15,5],[-18,22],[-5,24],[-1,13]],'#8496aa');poly(ctx,[[15,5],[18,22],[5,24],[1,13]],'#8496aa');
   rounded(ctx,-15,-4,30,25,8,'#526b88');poly(ctx,[[-10,0],[0,-7],[10,0],[8,14],[0,18],[-8,14]],'#9eb8c7');poly(ctx,[[0,-6],[6,1],[5,12],[0,17]],'#d8bc76',null);
   circle(ctx,0,-12,16,'#7f95a9');poly(ctx,[[-12,-13],[0,-28],[12,-13],[10,-7],[-10,-7]],'#bfd0d7');rounded(ctx,-11,-14,22,7,3,'#23354c');stroke(ctx,[[-9,-11],[9,-11]],'#e3ce88',2);
   poly(ctx,[[-22,0],[-9,-6],[-5,11],[-19,16]],'#b39458');poly(ctx,[[-19,4],[-12,8],[-15,14],[-22,11]],'#e8d095',null);
-  stroke(ctx,[[18,9],[29,-19]],'#c9dfeb',5);poly(ctx,[[28,-26],[33,-12],[25,-14]],'#f4e3b1');stroke(ctx,[[15,2],[24,6]],'#e9c078',4);break}
+  stroke(ctx,[[18,9],[29,-19]],'#c9dfeb',5);poly(ctx,[[28,-26],[33,-12],[25,-14]],'#f4e3b1');stroke(ctx,[[15,2],[24,6]],'#e9c078',4);ctx.restore();break}
 case 'goblin':{
   poly(ctx,[[-12,-7],[-29,-19],[-23,2],[-13,3]],'#709d57');poly(ctx,[[12,-7],[29,-19],[23,2],[13,3]],'#709d57');
   rounded(ctx,-14,3,28,18,8,'#596743');circle(ctx,0,-9,17,'#7cad5d');circle(ctx,-7,-12,4,'#e2ca76');circle(ctx,7,-12,4,'#e2ca76');circle(ctx,-7,-11,2,'#2b2a1c',null);circle(ctx,7,-11,2,'#2b2a1c',null);poly(ctx,[[-6,-1],[0,3],[6,-1]],'#4b6c3a');stroke(ctx,[[-9,6],[9,6]],'#304f39',3);break}
@@ -44,6 +44,24 @@ case 'item':{
   poly(ctx,[[-16,-12],[0,-22],[16,-12],[16,13],[0,22],[-16,13]],'#7755a0','#ddc5ff',3);poly(ctx,[[0,-17],[12,-9],[0,15],[-12,-9]],'#c5abef',null);stroke(ctx,[[0,-13],[0,13]],'#f9e5ff',3);break}
 case 'chest':{
   rounded(ctx,-21,-7,42,28,5,'#8f5b34','#e2ae69');rounded(ctx,-21,-19,42,18,8,'#a56d3c','#edbe7b');rounded(ctx,-4,-19,8,40,2,'#efc874','#684320');rounded(ctx,-21,0,42,6,1,'#65442d',null);circle(ctx,0,4,4,'#4a3b2a','#ffe5a1');break}
+case 'stone':{
+  poly(ctx,[[-22,11],[-18,-9],[-7,-19],[11,-14],[23,2],[14,17],[-10,19]],'#697b7c','#243d43',2);
+  poly(ctx,[[-18,-8],[-7,-19],[11,-14],[1,0],[-10,5]],'#9aa3a0',null);
+  stroke(ctx,[[-4,6],[4,11],[13,10]],'#475f60',2);break}
+case 'rune':{
+  circle(ctx,0,0,20,'#263c41','#547f84',2);
+  ctx.beginPath();ctx.arc(0,0,15,0,Math.PI*2);ctx.strokeStyle='#7c9f9d';ctx.lineWidth=1.4;ctx.stroke();
+  stroke(ctx,[[-8,8],[0,-12],[8,8],[-8,-3],[8,-3]],'#73c8b9',2);
+  circle(ctx,0,-12,3,'#a4f3e1',null);break}
+case 'flowers':{
+  for(let j=0;j<5;j++){const a=j*Math.PI*2/5;circle(ctx,Math.cos(a)*8,Math.sin(a)*7,4,j%2?'#d9b973':'#9e849d',null)}
+  circle(ctx,0,0,5,'#e3d18e',null);
+  stroke(ctx,[[0,6],[0,20]],'#497c59',2);break}
+case 'banner':{
+  stroke(ctx,[[0,20],[0,-30]],'#9c9b86',3);
+  poly(ctx,[[1,-28],[19,-23],[19,3],[10,0],[1,3]],'#6d4051','#e0b679',1.5);
+  poly(ctx,[[6,-20],[15,-17],[15,-10],[10,-7],[6,-10]],'#c3a16d',null);
+  break}
 case 'tree':{
   poly(ctx,[[-4,3],[4,3],[5,19],[-5,19]],'#71523b',null);poly(ctx,[[0,-28],[-18,-6],[-10,-6],[-23,9],[23,9],[10,-6],[18,-6]],'#2b7252','#1b4e42',2);poly(ctx,[[0,-21],[-10,-6],[0,-9],[11,-4]],'#479267',null);break}
 default:circle(ctx,0,0,14,'#b9c8d5');
