@@ -8,6 +8,7 @@ function switchTab(name){
 }
 tabs.forEach(button=>button.addEventListener('click',()=>switchTab(button.dataset.tab)));
 window.LastHeroUI={switchTab};
+window.addEventListener('keydown',e=>{if(e.code==='Enter'&&!e.repeat){const start=document.getElementById('start');if(start&&!start.disabled){e.preventDefault();start.click()}}});
 const inventory=document.getElementById('inventory');
 if(inventory){
  const watcher=new MutationObserver(()=>{if(document.querySelector('#inventory .sell-item')&&document.querySelector('.overlay:not([hidden])'))switchTab('inventory')});
