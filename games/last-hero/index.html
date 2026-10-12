@@ -1,8 +1,39 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101827"><title>Последний герой — MiniGames Center</title><link rel="stylesheet" href="styles.css"></head><body>
-<div class="app"><header><a href="../../">← Все игры</a><strong>⚔️ ПОСЛЕДНИЙ ГЕРОЙ</strong><span>Версия 0.4.1</span></header>
-<div class="hud"><div>❤️ Здоровье <b id="hp"></b></div><div>⭐ Уровень <b id="level"></b></div><div>🌊 Волна <b id="wave"></b></div><div>💀 Убито <b id="kills"></b></div><div>⏱ Время <b id="timer"></b></div></div>
-<div class="experience"><div id="experienceBar"></div></div><div id="bossPanel" class="boss-panel" hidden><div class="boss-title"><b>👹 Вождь орков — БОСС</b><span id="bossHpText"></span></div><div class="boss-health"><div id="bossHpBar"></div></div></div>
-<div class="layout"><div class="field"><canvas id="arena" width="960" height="600" aria-label="Игровая арена"></canvas><div class="status" id="status" role="status">Нажми «Начать игру».</div></div>
-<aside><h2>Последний рыцарь</h2><p>Подбирай 🪙, 🎁 и 🧪. Открывай сундуки 📦, подходя к ним. Надевай трофеи, лечись клавишей H и трать золото у торговца между волнами. На пятой волне избегай красных кругов: босс бьёт по площади и призывает прислужников. Новый навык — круговой удар (E): наносит урон и отбрасывает врагов рядом. С третьей волны появляются 🧙 шаманы: они лечат раненых союзников в радиусе. Побеждай их первыми! Выбери врага кликом или нажми Q для приоритетной цели. Между волнами продавай ненужные вещи и покупай постоянные улучшения на забег. За достижения получай золото. Персонажи, враги, сундуки и добыча теперь нарисованы в собственном векторном стиле.</p><div id="stats" class="stats"></div><div id="inventory" class="stats"></div><h3>🏆 Достижения</h3><div id="achievements" class="awards"></div><button id="start" class="primary">▶ Начать игру</button><button id="pause">⏸ Пауза</button><button id="dash">💨 Рывок (Shift)</button><button id="heal">🧪 Выпить зелье (H)</button><button id="shock">⚡ Круговой удар (E)</button><div id="targetLabel" class="target-label">🎯 Цель: ближайший враг</div><button id="selectTarget">🎯 Выбрать важную цель (Q)</button><button id="clearTarget">✕ Сбросить цель (Esc)</button><button id="restart">↻ Новый забег</button></aside></div></div>
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827"><title>Последний герой — MiniGames Center</title>
+<link rel="stylesheet" href="styles.css"></head>
+<body>
+<div class="app">
+<header class="topbar"><a href="../../">← Все игры</a><strong>ПОСЛЕДНИЙ ГЕРОЙ</strong><span>Версия 0.4.2</span></header>
+<div class="hud">
+ <div>❤️ Здоровье <b id="hp"></b></div><div>⭐ Уровень <b id="level"></b></div>
+ <div>🌊 Волна <b id="wave"></b></div><div>💀 Убито <b id="kills"></b></div><div>⏱ Время <b id="timer"></b></div>
+</div>
+<div class="experience"><div id="experienceBar"></div></div>
+<div id="bossPanel" class="boss-panel" hidden><div class="boss-title"><b>Вождь орков — БОСС</b><span id="bossHpText"></span></div><div class="boss-health"><div id="bossHpBar"></div></div></div>
+<div class="layout">
+ <section class="field" aria-label="Игровая арена"><canvas id="arena" width="960" height="600" aria-label="Игровая арена"></canvas><div class="status" id="status" role="status">Нажми «Начать игру».</div></section>
+ <aside class="game-panel">
+  <div class="panel-header"><div><span class="eyebrow">ПАНЕЛЬ ГЕРОЯ</span><h2>Последний рыцарь</h2></div><button id="pause" class="small-btn">Пауза <kbd>Space</kbd></button></div>
+  <div class="quick-actions">
+    <button id="start" class="primary">Начать игру <kbd>↵</kbd></button>
+    <button id="dash">Рывок <kbd>Shift</kbd></button>
+    <button id="heal">Лечение <kbd>H</kbd></button>
+    <button id="shock">Круговой удар <kbd>E</kbd></button>
+  </div>
+  <div class="target-row"><span id="targetLabel" class="target-label">Цель: ближайший враг</span><button id="selectTarget" title="Приоритетная цель">Цель <kbd>Q</kbd></button><button id="clearTarget" title="Сбросить цель">Сброс <kbd>Esc</kbd></button></div>
+  <nav class="tabs" aria-label="Панели информации"><button class="tab active" type="button" data-tab="inventory" aria-selected="true">Инвентарь</button><button class="tab" type="button" data-tab="stats" aria-selected="false">Герой</button><button class="tab" type="button" data-tab="achievements" aria-selected="false">Награды</button><button class="tab" type="button" data-tab="help" aria-selected="false">?</button></nav>
+  <div class="tab-content">
+    <div id="inventory" class="tab-pane active"></div>
+    <div id="stats" class="stats tab-pane"></div>
+    <div id="achievements" class="awards tab-pane"></div>
+    <div id="help" class="tab-pane help-pane"><h3>Управление</h3><p>Ходьба — <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> или стрелки. Мышь / касание — движение к точке. Клик по врагу — приоритетная цель.</p><p><kbd>Shift</kbd> — рывок · <kbd>H</kbd> — зелье · <kbd>E</kbd> — круговой удар · <kbd>Q</kbd> — важная цель · <kbd>Esc</kbd> — сброс цели · <kbd>Space</kbd> — пауза.</p><p>Сундуки открываются при приближении. После волны торговец продаёт улучшения; в инвентаре можно продавать лишнюю экипировку.</p></div>
+  </div>
+  <button id="restart" class="restart-btn">↻ Новый забег</button>
+ </aside>
+</div>
+</div>
 <div id="overlay" class="overlay" hidden><div class="dialog"><h2 id="modalTitle"></h2><p id="modalText"></p><div id="choices"></div></div></div>
-<script src="items.js" defer></script><script src="inventory.js" defer></script><script src="art.js" defer></script><script src="game.js" defer></script><script>window.addEventListener('load',()=>window.RPGInventory&&window.RPGInventory.render())</script></body></html>
+<script src="items.js" defer></script><script src="inventory.js" defer></script><script src="art.js" defer></script><script src="ui.js" defer></script><script src="game.js" defer></script>
+</body></html>
