@@ -51,3 +51,8 @@ button kbd{margin-left:6px;vertical-align:middle}kbd{display:inline-flex;align-i
 .dialog{max-height:90dvh;overflow-y:auto}
 @media(max-width:950px){.app{min-height:0}.layout{grid-template-columns:1fr}.field canvas{max-height:65dvh}.game-panel{height:auto;max-height:none;min-height:0;overflow:visible}.tab-content{height:250px;flex:none}.hud{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:600px){.hud{grid-template-columns:repeat(3,minmax(0,1fr))}.hud>div{font-size:11px;padding:7px 3px}.field canvas{max-height:58dvh}.game-panel{padding:9px}.quick-actions button{font-size:11px}.target-row{grid-template-columns:1fr auto auto}}
+
+/* Dynamic labels keep their real keyboard mapping after HUD rerenders */
+#pause:not(:has(kbd))::after,#shock:not(:has(kbd))::after{display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;margin-left:6px;border:1px solid #7890a6;background:#19293a;color:#e7efff;border-radius:5px;font:700 11px system-ui}
+#pause:not(:has(kbd))::after{content:"Space"}
+#shock:not(:has(kbd))::after{content:"E"}
