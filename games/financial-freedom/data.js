@@ -62,5 +62,5 @@ window.FF_DATA={
  {name:'Франшизная сеть',cost:300000,income:21000,type:'deal'}
  ],
  track:['start','small','expense','market','payday','big','small','child','small','charity','payday','expense','big','market','small','jobloss','payday','small','market','expense','big','child','small','payday'],
- fastTrack:['start','deal','dream','income','deal','market','dream','deal','income','dream','deal','income']
+ fastTrack:['start','deal','dream','income','deal','market','dream','deal','income','dream','deal','income','deal','market','dream','income','deal','dream','market','deal','income','dream','deal','income']
 };
