@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d1a24">
+<title>Финансовая свобода — MiniGames Center</title><link rel="stylesheet" href="styles.css"></head>
+<body><div class="shell">
+<header class="topbar"><a href="../../">← Все игры</a><div class="brand"><span class="mark">◆</span> ФИНАНСОВАЯ СВОБОДА <small>ЭКОНОМИЧЕСКАЯ СТРАТЕГИЯ</small></div><span class="version">Ранняя версия 0.1</span></header>
+<section id="setup" class="setup"><div class="setup-copy"><span class="overline">ОДНА ЖИЗНЬ. МНОГО ВОЗМОЖНОСТЕЙ.</span><h1>Пусть деньги<br><em>работают на тебя.</em></h1><p>Начни с обычной профессии, управляй бюджетом, покупай активы и увеличивай пассивный доход. Оставь круг постоянных расходов позади и доберись до своей мечты.</p>
+<div class="rules"><div><b>01</b><span>Изучай финансовый отчёт</span></div><div><b>02</b><span>Выбирай выгодные сделки</span></div><div><b>03</b><span>Стань финансово независимым</span></div></div></div>
+<div class="setup-card"><h2>Создать партию</h2><label for="profession">Твоя профессия</label><select id="profession"></select><label for="dream">Твоя большая мечта</label><select id="dream"></select><button id="startGame" class="primary">Начать игру <span>→</span></button><p class="quiet">Одиночный режим · Автосохранение в браузере · Бесплатно</p></div></section>
+<section id="game" hidden>
+<div class="statbar"><div><span>Наличные</span><b id="cash">0 ₽</b></div><div><span>Пассивный доход</span><b id="passive">0 ₽</b></div><div><span>Расходы / мес.</span><b id="expenses">0 ₽</b></div><div><span>Денежный поток</span><b id="cashflow">0 ₽</b></div><div><span>Капитал</span><b id="networth">0 ₽</b></div></div>
+<div class="progress-head"><span id="stageName">Внутренний круг</span><strong id="progressText">0%</strong></div><div class="progress"><div id="progressFill"></div></div>
+<div class="workspace">
+<section class="board-column"><div class="board-meta"><span id="professionName"></span><span>Ход <b id="turn">0</b></span></div><div id="board" class="board" aria-label="Игровое поле"></div>
+<div class="controlbar"><div id="dice" class="die">🎲 —</div><button id="roll" class="primary">🎲 Бросить кубик</button><button id="borrow">Кредит +5 000 ₽</button><button id="payDebt">Погасить до 5 000 ₽</button></div>
+<div id="notice" class="notice" role="status">Приступай к игре.</div>
+<div id="event" class="event" hidden></div>
+</section>
+<aside class="side">
+<section class="panel dream"><span class="overline">ТВОЯ ЦЕЛЬ</span><h3 id="dreamName"></h3><p>Открой внешний круг и накопи на мечту — или достигни целевого дохода.</p></section>
+<section class="panel finance"><div class="panel-title"><h2>Финансовый отчёт</h2><span>₽ / месяц</span></div><div id="finances"></div></section>
+<section class="panel history"><div class="panel-title"><h2>История ходов</h2><button id="resetGame" class="reset">Новая партия</button></div><div id="history"></div></section>
+</aside></div>
+</section>
+<footer>Авторская экономическая игра, вдохновлённая финансовыми настольными стратегиями. Не является официальной версией CASHFLOW и не связана с её правообладателями. Игровые цифры условные.</footer>
+</div><script src="data.js" defer></script><script src="game.js" defer></script></body></html>
