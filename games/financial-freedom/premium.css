@@ -80,3 +80,23 @@ body:before{top:-20vw;left:-10vw}body:after{bottom:-22vw;right:-9vw}
  .board-column>.controlbar{position:relative;z-index:11}
 }
 @media(max-width:640px){.board-column>.event:not([hidden]){max-height:none;overflow:visible}}
+
+/* Real pre-rendered illustration atlas (12 independent tile scenes within one image). */
+.board>.space{position:relative;isolation:isolate;justify-content:flex-end;padding-bottom:3px}
+.board>.space:before{content:"";position:absolute;inset:0 0 17px;z-index:-1;background-image:url('art/board-atlas.svg');background-repeat:no-repeat;background-size:600% 200%;background-position:0% 0%;opacity:.98}
+.board>.space:after{content:"";position:absolute;inset:auto 0 0;height:22px;background:linear-gradient(#052b32a1,#022637ef);z-index:-1;border-top:1px solid #e3d49a8a}
+.board>.space small{font-size:clamp(9px,.85vw,12px);color:#fff7df;text-shadow:0 1px 3px #000,0 2px 7px #001223;line-height:1.1}
+.board>.s-small:before{background-position:0% 0%}
+.board>.s-big:before{background-position:20% 0%}
+.board>.s-child:before{background-position:40% 0%}
+.board>.s-expense:before{background-position:60% 0%}
+.board>.s-market:before{background-position:80% 0%}
+.board>.s-payday:before{background-position:100% 0%}
+.board>.s-jobloss:before{background-position:0% 100%}
+.board>.s-charity:before{background-position:20% 100%}
+.board>.s-start:before{background-position:40% 100%}
+.board>.s-dream:before{background-position:60% 100%}
+.board>.s-income:before{background-position:80% 100%}
+.board>.s-deal:before{background-position:100% 100%}
+.board>.space.current:after{background:linear-gradient(#3f321ba6,#443316ef)}
+@media(max-width:640px){.board>.space:before{bottom:13px}.board>.space:after{height:17px}.board>.space small{font-size:7px}}
