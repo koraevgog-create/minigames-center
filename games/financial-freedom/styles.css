@@ -36,3 +36,14 @@
 .stock-row button:last-child{background:#4d5365;border-color:#777c8b}
 @media(max-width:1250px){.controlbar{grid-template-columns:70px 1fr 1fr}.controlbar button:last-child{grid-column:1/-1}}
 @media(max-width:550px){.controlbar{grid-template-columns:55px 1fr 1fr}.controlbar button:last-child{grid-column:1/-1}.stock-row{grid-template-columns:1fr}.stock-row>div button{flex:1}}
+
+/* v0.3: investment analysis and clear market event cards */
+.deal-card{border:1px solid #76968d;background:linear-gradient(145deg,#193c3c,#142b39);border-radius:13px;padding:14px;margin:12px 0 15px;box-shadow:inset 0 1px #d5ffdb18}
+.deal-category{display:inline-flex;padding:5px 8px;border-radius:6px;color:#e9d09c;background:#6d5b373d;border:1px solid #bfa26b57;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:11px}
+.deal-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.deal-metrics>div{background:#0e2930;border:1px solid #5b747156;border-radius:9px;padding:10px;min-width:0}
+.deal-metrics small{display:block;font-size:10px;line-height:1.4;color:#a5bdc0;margin-bottom:6px}
+.deal-metrics b{display:block;font-size:15px;color:#f2e1c4;overflow-wrap:anywhere}
+.deal-metrics .positive b{color:#a7ebc5}
+.event .deal-note{font-size:11px;line-height:1.55;color:#b7cdc8;margin:10px 2px 0}
+@media(max-width:620px){.deal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.deal-card{padding:10px}.deal-metrics b{font-size:13px}}
