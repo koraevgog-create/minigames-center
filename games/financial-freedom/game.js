@@ -44,7 +44,7 @@ function renderFinances(){
  $('turn').textContent=game.turn;
  $('dreamName').textContent=game.dream.icon+' '+game.dream.name+' · '+fmt(game.dream.cost);
  $('roll').disabled=!!active||game.ended;
- $('borrow').disabled=game.stage==='fast'||game.ended;
+ $('borrow').disabled=game.ended;
  $('payDebt').disabled=!!active||game.bankDebt<=0||game.cash<=0||game.ended;$('payPersonal').disabled=!!active||game.prof.debt<=0||game.cash<=0||game.stage!=='rat'||game.ended;
  $('roll').textContent=game.ended?'Партия завершена':active?'Сначала реши событие':'Бросить кубик';
 }
@@ -99,7 +99,7 @@ function step(){
  const old=game.pos;game.pos=(game.pos+roll)%spaces.length;game.turn++;
  
  if(game.stage==='rat'){for(let j=1;j<=roll;j++){const pos=(old+j)%spaces.length;if(spaces[pos]==='payday'){const amount=flow();game.cash+=amount;line('Зарплатный день: '+(amount>=0?'+':'')+fmt(amount));if(game.cash<0){game.bankDebt+=-game.cash;game.bankPay+=Math.ceil(-game.cash*.1);game.cash=0;line('Автоматический кредит для покрытия дефицита')}if(checkBankruptcy())return}}}
- if(game.stage==='fast'){let payments=0;for(let j=1;j<=roll;j++){const pos=(old+j)%spaces.length;if(spaces[pos]==='income'||pos===0){game.cash+=game.fastIncome;game.fastCycles++;payments++;}}if(payments)line('Внешний круг: '+payments+' выплат(ы), +'+fmt(game.fastIncome*payments));}
+ if(game.stage==='fast'){let payments=0;for(let j=1;j<=roll;j++){const pos=(old+j)%spaces.length;if(spaces[pos]==='income'||pos===0){game.cash+=Math.max(0,game.fastIncome-game.bankPay);game.fastCycles++;payments++;}}if(payments)line('Внешний круг: '+payments+' выплат(ы), +'+fmt(Math.max(0,game.fastIncome-game.bankPay)*payments)+' после банковских платежей');}
  $('dice').textContent='⚄ '+roll;$('dice').classList.remove('dice-roll');void $('dice').offsetWidth;$('dice').classList.add('dice-roll');
  line('Ход '+game.turn+': выпало '+roll+' · '+(game.stage==='rat'?'внутренний':'внешний')+' круг');
  if(game.stage==='fast'){handleFast(spaces[game.pos]);render();animateMove(old,roll);return}
@@ -122,7 +122,7 @@ function setup(){
  for(const p of D.professions){const o=document.createElement('option');o.value=p.id;o.textContent=p.icon+' '+p.name;$('profession').appendChild(o)}
  for(const dream of D.dreams){const o=document.createElement('option');o.value=dream.id;o.textContent=dream.icon+' '+dream.name;$('dream').appendChild(o)}
  $('startGame').onclick=start;$('roll').onclick=step;
- $('borrow').onclick=()=>{if(!game||game.stage==='fast'||game.ended)return;const amount=Number($('loanAmount').value)||5000;const payment=Math.ceil(amount*.1);game.cash+=amount;game.bankDebt+=amount;game.bankPay+=payment;line('Банковский кредит: +'+fmt(amount)+'; платёж +'+fmt(payment)+'/мес.');status(active?'Кредит получен. Теперь можешь принять решение по открытой сделке.':'Кредит получен');render()};
+ $('borrow').onclick=()=>{if(!game||game.ended)return;const amount=Number($('loanAmount').value)||5000;const payment=Math.ceil(amount*.1);game.cash+=amount;game.bankDebt+=amount;game.bankPay+=payment;line('Банковский кредит: +'+fmt(amount)+'; платёж +'+fmt(payment)+'/мес.');status(active?'Кредит получен. Теперь можешь принять решение по открытой сделке.':'Кредит получен');render()};
  $('payDebt').onclick=()=>{if(!game||active||!game.bankDebt)return;const value=Math.min(5000,game.cash,game.bankDebt);if(value<=0)return;const before=game.bankDebt;game.bankDebt-=value;game.cash-=value;game.bankPay=Math.round(game.bankPay*game.bankDebt/before);done('Погашен банковский долг: '+fmt(value))};
  $('payPersonal').onclick=()=>{if(!game||active||game.stage!=='rat'||game.ended||game.prof.debt<=0)return;const sum=Math.min(game.prof.debt,game.cash,1000);if(sum<=0)return;const old=game.prof.debt;game.prof.debt-=sum;game.prof.debtPay=Math.round(game.prof.debtPay*game.prof.debt/old);game.cash-=sum;done('Погашено личного долга: '+fmt(sum))};
  $('resetGame').onclick=()=>{if(!confirm('Завершить текущую партию и начать заново?'))return;game=null;active=null;logs=[];localStorage.removeItem(KEY);$('game').hidden=true;$('setup').hidden=false};
