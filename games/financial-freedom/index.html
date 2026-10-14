@@ -2,7 +2,7 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d1a24">
 <title>Финансовая свобода — MiniGames Center</title><link rel="stylesheet" href="styles.css"></head>
 <body><div class="shell">
-<header class="topbar"><a href="../../">← Все игры</a><div class="brand"><span class="mark">◆</span> ФИНАНСОВАЯ СВОБОДА <small>ЭКОНОМИЧЕСКАЯ СТРАТЕГИЯ</small></div><span class="version">Ранняя версия 0.4</span></header>
+<header class="topbar"><a href="../../">← Все игры</a><div class="brand"><span class="mark">◆</span> ФИНАНСОВАЯ СВОБОДА <small>ЭКОНОМИЧЕСКАЯ СТРАТЕГИЯ</small></div><div class="top-actions"><button type="button" id="guideOpen" class="guide-trigger">? Как играть</button><span class="version">Ранняя версия 0.5</span></div></header>
 <section id="setup" class="setup"><div class="setup-copy"><span class="overline">ОДНА ЖИЗНЬ. МНОГО ВОЗМОЖНОСТЕЙ.</span><h1>Пусть деньги<br><em>работают на тебя.</em></h1><p>Начни с обычной профессии, управляй бюджетом, покупай активы и увеличивай пассивный доход. Оставь круг постоянных расходов позади и доберись до своей мечты.</p>
 <div class="rules"><div><b>01</b><span>Изучай финансовый отчёт</span></div><div><b>02</b><span>Выбирай выгодные сделки</span></div><div><b>03</b><span>Стань финансово независимым</span></div></div></div>
 <div class="setup-card"><h2>Создать партию</h2><label for="profession">Твоя профессия</label><select id="profession"></select><label for="dream">Твоя большая мечта</label><select id="dream"></select><button id="startGame" class="primary">Начать игру <span>→</span></button><p class="quiet">Одиночный режим · Автосохранение в браузере · Бесплатно</p></div></section>
@@ -22,4 +22,4 @@
 </aside></div>
 </section>
 <footer>Авторская экономическая игра, вдохновлённая финансовыми настольными стратегиями. Не является официальной версией CASHFLOW и не связана с её правообладателями. Игровые цифры условные.</footer>
-</div><script src="data.js" defer></script><script src="game.js" defer></script></body></html>
+</div><div id="guide" class="guide-backdrop" hidden><section class="guide-dialog" role="dialog" aria-modal="true" aria-labelledby="guideStep"><button type="button" id="guideClose" class="guide-x" aria-label="Закрыть обучение">×</button><div class="guide-eyebrow">ФИНАНСОВАЯ АКАДЕМИЯ</div><h2 id="guideStep"></h2><p id="guideText"></p><div class="guide-bottom"><span id="guideCount"></span><div><button type="button" id="guidePrev">← Назад</button><button type="button" id="guideNext" class="primary">Далее →</button></div></div></section></div><script src="data.js" defer></script><script src="game.js" defer></script><script src="tutorial.js" defer></script></body></html>
