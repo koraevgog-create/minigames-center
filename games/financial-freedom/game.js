@@ -34,6 +34,7 @@ function renderFinances(){
  for(const a of game.assets){const row=document.createElement('div');row.className='asset-row';const name=document.createElement('div');name.innerHTML='<strong></strong><small></small>';name.querySelector('strong').textContent=a.name;name.querySelector('small').textContent='+'+fmt(a.monthly)+'/мес. · Долг '+fmt(a.loan);row.appendChild(name);
  const b=document.createElement('button');b.disabled=!!active||game.ended;b.textContent='Продать';b.title='Продать по базовой стоимости и погасить долг по активу';b.onclick=()=>sellAsset(a.id,a.cost);row.appendChild(b);assets.appendChild(row)}
  stat.append(base,spending,stocks,assets);if(game.stage==='fast'){stat.appendChild(fastAssets);base.append(details('Доход внешнего круга / цикл',game.fastIncome))}
+ $('sidebarFlow').textContent=(flow()>=0?'+':'')+fmt(flow());$('sidebarFlow').classList.toggle('negative',flow()<0);
  $('cash').textContent=fmt(game.cash);$('passive').textContent=fmt(passive());$('expenses').textContent=fmt(expenses());$('cashflow').textContent=fmt(flow());$('networth').textContent=fmt(worth());
  const percent=game.stage==='rat'?Math.min(100,passive()/Math.max(1,expenses())*100):Math.min(100,game.fastIncome/Math.max(1,game.fastGoal)*100);
  $('progressFill').style.width=percent+'%';
@@ -45,7 +46,7 @@ function renderFinances(){
  $('roll').disabled=!!active||game.ended;
  $('borrow').disabled=game.stage==='fast'||game.ended;
  $('payDebt').disabled=!!active||game.bankDebt<=0||game.cash<=0||game.ended;$('payPersonal').disabled=!!active||game.prof.debt<=0||game.cash<=0||game.stage!=='rat'||game.ended;
- $('roll').textContent=game.ended?'Партия завершена':active?'Сначала реши событие':'🎲 Бросить кубик';
+ $('roll').textContent=game.ended?'Партия завершена':active?'Сначала реши событие':'Бросить кубик';
 }
 function renderBoard(){
  const board=$('board');board.replaceChildren();
@@ -54,7 +55,7 @@ function renderBoard(){
  title.querySelector('h2').textContent=game.stage==='rat'?'Круг привычных расходов':'Мир больших возможностей';
  title.querySelector('p').textContent=game.stage==='rat'?'Пассивный доход должен превысить расходы':'Достигни своей мечты или цели по доходу';
  board.appendChild(title);
- spaces.forEach((type,i)=>{const el=document.createElement('div');el.className='space s-'+type+(i===game.pos?' current':'');const mapping={start:['◆','Старт'],small:['◈','Малая сделка'],big:['▣','Крупная сделка'],expense:['!','Расход'],market:['↗','Рынок'],payday:['₽','Зарплата'],child:['♥','Семья'],charity:['✦','Доброе дело'],jobloss:['⌛','Безработица'],deal:['⬡','Инвестиции'],dream:['★','Мечта'],income:['₽','Доход']};const [symbol,label]=mapping[type]||mapping.start;el.innerHTML='<span></span><small></small>';el.querySelector('span').textContent=symbol;el.querySelector('small').textContent=label;if(i===game.pos){const pin=document.createElement('b');pin.className='piece';pin.textContent='●';el.appendChild(pin)}el.title=(i+1)+': '+label;el.dataset.index=String(i);board.appendChild(el)});
+ spaces.forEach((type,i)=>{const el=document.createElement('div');el.className='space s-'+type+(i===game.pos?' current':'');const mapping={start:['','Старт'],small:['','Малая сделка'],big:['','Крупная сделка'],expense:['','Расход'],market:['','Рынок'],payday:['','Зарплата'],child:['','Семья'],charity:['','Доброе дело'],jobloss:['','Безработица'],deal:['','Инвестиции'],dream:['','Мечта'],income:['','Доход']};const [symbol,label]=mapping[type]||mapping.start;el.innerHTML='<span></span><small></small>';el.querySelector('span').textContent=symbol;el.querySelector('small').textContent=label;if(i===game.pos){const pin=document.createElement('b');pin.className='piece';pin.textContent='●';el.appendChild(pin)}el.title=(i+1)+': '+label;el.dataset.index=String(i);board.appendChild(el)});
 }
 function render(){if(!game)return;renderBoard();renderFinances();renderLog();refreshOfferButtons();persist()}
 function refreshOfferButtons(){for(const entry of currentOfferButtons){entry.node.disabled=typeof entry.item.disabled==='function'?entry.item.disabled():!!entry.item.disabled}}
@@ -99,7 +100,7 @@ function step(){
  
  if(game.stage==='rat'){for(let j=1;j<=roll;j++){const pos=(old+j)%spaces.length;if(spaces[pos]==='payday'){const amount=flow();game.cash+=amount;line('Зарплатный день: '+(amount>=0?'+':'')+fmt(amount));if(game.cash<0){game.bankDebt+=-game.cash;game.bankPay+=Math.ceil(-game.cash*.1);game.cash=0;line('Автоматический кредит для покрытия дефицита')}if(checkBankruptcy())return}}}
  if(game.stage==='fast'){let payments=0;for(let j=1;j<=roll;j++){const pos=(old+j)%spaces.length;if(spaces[pos]==='income'||pos===0){game.cash+=game.fastIncome;game.fastCycles++;payments++;}}if(payments)line('Внешний круг: '+payments+' выплат(ы), +'+fmt(game.fastIncome*payments));}
- $('dice').textContent='🎲 '+roll;$('dice').classList.remove('dice-roll');void $('dice').offsetWidth;$('dice').classList.add('dice-roll');
+ $('dice').textContent='⚄ '+roll;$('dice').classList.remove('dice-roll');void $('dice').offsetWidth;$('dice').classList.add('dice-roll');
  line('Ход '+game.turn+': выпало '+roll+' · '+(game.stage==='rat'?'внутренний':'внешний')+' круг');
  if(game.stage==='fast'){handleFast(spaces[game.pos]);render();animateMove(old,roll);return}
  const type=spaces[game.pos];
@@ -115,13 +116,13 @@ function step(){
 function start(){
  const p=D.professions.find(x=>x.id===$('profession').value)||D.professions[0],dream=D.dreams.find(x=>x.id===$('dream').value)||D.dreams[0];
  game={decks:{},fastAssets:[],fastCycles:0,prof:copy(p),dream:copy(dream),stage:'rat',pos:0,turn:0,cash:p.cash,assets:[],shares:{},prices:Object.fromEntries(D.stocks.map(st=>[st.ticker,st.price])),insolvency:0,children:0,bankDebt:0,bankPay:0,bonusRolls:0,fastIncome:0,fastGoal:0,ended:false};
- logs=[];cardVersion=0;clearEvent();$('setup').hidden=true;$('game').hidden=false;$('dice').textContent='🎲 —';status('Начинай ход. Твоя цель — пассивный доход выше расходов.');line('Новая партия: '+p.name+'. Мечта: '+dream.name);render();
+ logs=[];cardVersion=0;clearEvent();$('setup').hidden=true;$('game').hidden=false;$('dice').textContent='⚄';status('Начинай ход. Твоя цель — пассивный доход выше расходов.');line('Новая партия: '+p.name+'. Мечта: '+dream.name);render();
 }
 function setup(){
  for(const p of D.professions){const o=document.createElement('option');o.value=p.id;o.textContent=p.icon+' '+p.name;$('profession').appendChild(o)}
  for(const dream of D.dreams){const o=document.createElement('option');o.value=dream.id;o.textContent=dream.icon+' '+dream.name;$('dream').appendChild(o)}
  $('startGame').onclick=start;$('roll').onclick=step;
- $('borrow').onclick=()=>{if(!game||game.stage==='fast'||game.ended)return;const amount=5000;game.cash+=amount;game.bankDebt+=amount;game.bankPay+=500;line('Банковский кредит: +'+fmt(amount)+'; платёж +500 ₽/мес.');status(active?'Кредит получен. Теперь можешь принять решение по открытой сделке.':'Кредит получен');render()};
+ $('borrow').onclick=()=>{if(!game||game.stage==='fast'||game.ended)return;const amount=Number($('loanAmount').value)||5000;const payment=Math.ceil(amount*.1);game.cash+=amount;game.bankDebt+=amount;game.bankPay+=payment;line('Банковский кредит: +'+fmt(amount)+'; платёж +'+fmt(payment)+'/мес.');status(active?'Кредит получен. Теперь можешь принять решение по открытой сделке.':'Кредит получен');render()};
  $('payDebt').onclick=()=>{if(!game||active||!game.bankDebt)return;const value=Math.min(5000,game.cash,game.bankDebt);if(value<=0)return;const before=game.bankDebt;game.bankDebt-=value;game.cash-=value;game.bankPay=Math.round(game.bankPay*game.bankDebt/before);done('Погашен банковский долг: '+fmt(value))};
  $('payPersonal').onclick=()=>{if(!game||active||game.stage!=='rat'||game.ended||game.prof.debt<=0)return;const sum=Math.min(game.prof.debt,game.cash,1000);if(sum<=0)return;const old=game.prof.debt;game.prof.debt-=sum;game.prof.debtPay=Math.round(game.prof.debtPay*game.prof.debt/old);game.cash-=sum;done('Погашено личного долга: '+fmt(sum))};
  $('resetGame').onclick=()=>{if(!confirm('Завершить текущую партию и начать заново?'))return;game=null;active=null;logs=[];localStorage.removeItem(KEY);$('game').hidden=true;$('setup').hidden=false};
