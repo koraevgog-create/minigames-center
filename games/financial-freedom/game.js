@@ -4,8 +4,8 @@ const D=window.FF_DATA,$=id=>document.getElementById(id),fmt=n=>Math.round(n).to
 const pick=a=>a[Math.floor(Math.random()*a.length)],copy=x=>JSON.parse(JSON.stringify(x));
 const KEY='minigames.financial-freedom.v1';
 let game=null,active=null,logs=[],cardVersion=0;
-function income(){return game.prof.salary+game.assets.reduce((s,a)=>s+a.monthly,0)}
-function passive(){return game.assets.reduce((s,a)=>s+a.monthly,0)}
+function passive(){return game.assets.reduce((s,a)=>s+a.monthly,0)+D.stocks.reduce((sum,st)=>sum+((game.shares||{})[st.ticker]||0)*st.dividend,0)}
+function income(){return game.prof.salary+passive()}
 function expenses(){const p=game.prof;return p.tax+p.housing+p.utilities+p.food+p.transport+p.other+p.debtPay+game.bankPay+game.children*p.childCost}
 function flow(){return income()-expenses()}
 function worth(){return game.cash+game.assets.reduce((s,a)=>s+a.cost-a.loan,0)+Object.entries(game.shares||{}).reduce((v,[ticker,qty])=>v+qty*game.prices[ticker],0)-game.prof.debt-game.bankDebt}
@@ -21,8 +21,8 @@ function renderFinances(){
  const spending=document.createElement('section');spending.className='finance-group';spending.innerHTML='<h3>Расходы и обязательства</h3>';
  const p=game.prof;for(const [label,key]of [['Налоги','tax'],['Жильё','housing'],['Коммунальные','utilities'],['Продукты','food'],['Транспорт','transport'],['Прочие','other'],['Платёж по личному долгу','debtPay']])spending.appendChild(details(label,p[key]));
  spending.append(details('Банковский кредит — платёж',game.bankPay),details('Дети: '+game.children,game.children*p.childCost),details('Личный долг — остаток',p.debt),details('Банковский долг — остаток',game.bankDebt));
- const stocks=document.createElement('section');stocks.className='finance-group';stocks.innerHTML='<h3>Акции на бирже</h3>';
- for(const st of D.stocks){const qty=(game.shares||{})[st.ticker]||0;const row=document.createElement('div');row.className='stock-row';const label=document.createElement('span');label.textContent=st.ticker+' · '+st.name+' · '+fmt(game.prices[st.ticker])+' / шт. · '+qty+' шт.';const buttons=document.createElement('div');const buy=document.createElement('button');buy.textContent='Купить';buy.disabled=!!active||game.ended||game.stage!=='rat'||game.cash<game.prices[st.ticker];buy.onclick=()=>trade(st.ticker,1);const sell=document.createElement('button');sell.textContent='Продать';sell.disabled=!!active||game.ended||qty===0;sell.onclick=()=>trade(st.ticker,-1);buttons.append(buy,sell);row.append(label,buttons);stocks.appendChild(row)}
+ const stocks=document.createElement('section');stocks.className='finance-group';stocks.innerHTML='<h3>Биржа · акции и дивиденды</h3>';
+ for(const st of D.stocks){const qty=(game.shares||{})[st.ticker]||0;const row=document.createElement('div');row.className='stock-row';const label=document.createElement('span');label.textContent=st.ticker+' · '+st.name+' · '+fmt(game.prices[st.ticker])+' / шт. · '+qty+' шт. · '+fmt(st.dividend*qty)+'/мес.';const buttons=document.createElement('div');const buy=document.createElement('button');buy.textContent='Купить';buy.disabled=!!active||game.ended||game.stage!=='rat'||game.cash<game.prices[st.ticker];buy.onclick=()=>trade(st.ticker,1);const sell=document.createElement('button');sell.textContent='Продать';sell.disabled=!!active||game.ended||qty===0;sell.onclick=()=>trade(st.ticker,-1);buttons.append(buy,sell);row.append(label,buttons);stocks.appendChild(row)}
  const assets=document.createElement('section');assets.className='finance-group';assets.innerHTML='<h3>Баланс активов</h3>';
  if(!game.assets.length){const x=document.createElement('p');x.textContent='Активов пока нет. Покупай их на клетках сделок.';assets.appendChild(x)}
  for(const a of game.assets){const row=document.createElement('div');row.className='asset-row';const name=document.createElement('div');name.innerHTML='<strong></strong><small></small>';name.querySelector('strong').textContent=a.name;name.querySelector('small').textContent='+'+fmt(a.monthly)+'/мес. · Долг '+fmt(a.loan);row.appendChild(name);
