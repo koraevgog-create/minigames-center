@@ -47,3 +47,14 @@
 .deal-metrics .positive b{color:#a7ebc5}
 .event .deal-note{font-size:11px;line-height:1.55;color:#b7cdc8;margin:10px 2px 0}
 @media(max-width:620px){.deal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.deal-card{padding:10px}.deal-metrics b{font-size:13px}}
+
+/* v0.4 — the outer circle visually separates high-stakes opportunities */
+body:has(#stageName) .finance-group:last-child{border-bottom:0}
+.board:has(.s-deal.current) .board-center{border-color:#c5a77277;box-shadow:inset 0 0 55px #d0ab4a10,0 0 24px #0003}
+.s-income{background:linear-gradient(145deg,#26745f,#194b4c);border-color:#86d9b77d}
+.s-dream{background:linear-gradient(145deg,#8b7550,#5d4c42);border-color:#f8d5948a}
+.s-deal{background:linear-gradient(145deg,#316f78,#29455f)}
+.s-market{background:linear-gradient(145deg,#485c7b,#2f4561)}
+.finance-group .asset-row{min-width:0}.asset-row>div{min-width:0}.asset-row strong{overflow-wrap:anywhere}
+.deal-card{background:linear-gradient(145deg,#204445,#142935)}
+@media(max-width:600px){.deal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
