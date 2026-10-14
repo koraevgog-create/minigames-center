@@ -72,3 +72,11 @@ body:before{top:-20vw;left:-10vw}body:after{bottom:-22vw;right:-9vw}
 @media(max-width:1090px){.header-goal{display:none}.workspace{grid-template-columns:minmax(0,1fr) 330px}.controlbar{grid-template-columns:57px minmax(125px,1fr)}.bank-actions{grid-column:1/-1}.dice-status{justify-content:center}}
 @media(max-width:950px){.workspace{grid-template-columns:1fr}.controlbar{grid-template-columns:60px minmax(0,1fr) minmax(0,2fr)}.bank-actions{grid-column:auto}}
 @media(max-width:640px){.controlbar{grid-template-columns:60px 1fr}.bank-actions{grid-column:1/-1;flex-wrap:wrap}.bank-actions button{min-width:calc(33% - 6px)}.loan-choice{flex:1;max-width:none;min-width:100%}.dice-hint{display:none}.board{gap:2px}.board>.space{border-width:1px;padding:1px}.space small{font-size:7px}.brand small{font-size:8px}.statbar>div{min-height:56px}}
+
+/* Deal decision panel floats above the field; bank controls remain clickable. */
+@media(min-width:1100px) and (min-height:650px){
+ .board-column{position:relative;isolation:isolate}
+ .board-column>.event:not([hidden]){position:absolute;top:58px;right:18px;width:min(465px,75%);max-height:calc(100% - 180px);overflow:auto;z-index:10;box-shadow:0 12px 48px #000c,0 0 0 3px #d7b66780}
+ .board-column>.controlbar{position:relative;z-index:11}
+}
+@media(max-width:640px){.board-column>.event:not([hidden]){max-height:none;overflow:visible}}
