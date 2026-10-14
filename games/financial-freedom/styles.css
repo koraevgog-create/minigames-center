@@ -27,3 +27,12 @@
 .board>.space:nth-child(23){grid-row:4;grid-column:1}
 .board>.space:nth-child(24){grid-row:3;grid-column:1}
 .board>.space:nth-child(25){grid-row:2;grid-column:1}
+/* v0.2: stock dealing and debt controls */
+.controlbar{grid-template-columns:65px minmax(130px,1.4fr) repeat(3,minmax(105px,1fr))}
+.stock-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #ffffff17}
+.stock-row span{font-size:11px;color:#d9e8df;line-height:1.55}
+.stock-row>div{display:flex;gap:4px}
+.stock-row button{padding:6px 8px;font-size:10px;background:#2e695f;border-color:#579b88}
+.stock-row button:last-child{background:#4d5365;border-color:#777c8b}
+@media(max-width:1250px){.controlbar{grid-template-columns:70px 1fr 1fr}.controlbar button:last-child{grid-column:1/-1}}
+@media(max-width:550px){.controlbar{grid-template-columns:55px 1fr 1fr}.controlbar button:last-child{grid-column:1/-1}.stock-row{grid-template-columns:1fr}.stock-row>div button{flex:1}}
