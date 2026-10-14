@@ -113,6 +113,20 @@ window.FF_DATA={
  {name:'Технологическая компания',cost:440000,income:31000,type:'deal'},
  {name:'Франшизная сеть',cost:300000,income:21000,type:'deal'}
  ],
+ extraFast:[
+ {name:'Федеральная сеть пекарен',cost:325000,income:23000,type:'deal'},
+ {name:'Аренда складов у аэропорта',cost:540000,income:38000,type:'deal'},
+ {name:'Туристический комплекс',cost:420000,income:28500,type:'deal'},
+ {name:'Сервисная IT-компания',cost:195000,income:12500,type:'deal'},
+ {name:'Сеть частных детских центров',cost:250000,income:17500,type:'deal'},
+ {name:'Промышленный технопарк',cost:670000,income:49000,type:'deal'},
+ {name:'Сеть спортивных клубов',cost:360000,income:24000,type:'deal'},
+ {name:'Парк грузовой техники',cost:285000,income:19000,type:'deal'},
+ {name:'Бизнес по переработке отходов',cost:455000,income:30000,type:'deal'},
+ {name:'Арендная сеть мини-офисов',cost:385000,income:27500,type:'deal'},
+ {name:'Производство медицинского оборудования',cost:790000,income:56000,type:'deal'},
+ {name:'Сеть семейных отелей',cost:610000,income:44000,type:'deal'}
+ ],
  track:['start','small','expense','market','payday','big','small','child','small','charity','payday','expense','big','market','small','jobloss','payday','small','market','expense','big','child','small','payday'],
  fastTrack:['start','deal','dream','income','deal','market','dream','deal','income','dream','deal','income','deal','market','dream','income','deal','dream','market','deal','income','dream','deal','income']
 };
