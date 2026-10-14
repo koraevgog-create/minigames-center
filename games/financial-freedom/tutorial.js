@@ -8,15 +8,15 @@ const steps=[
 {title:'05 / Внешний круг',text:'После достижения финансовой свободы откроется второй круг. Инвестируй в крупные проекты и осуществи выбранную мечту либо достигни цели по доходу.',focus:'.dream'}
 ];
 let index=0;
-function show(i){index=i;const root=document.getElementById('guide');root.hidden=false;root.querySelector('#guideStep').textContent=steps[i].title;root.querySelector('#guideText').textContent=steps[i].text;root.querySelector('#guideCount').textContent=(i+1)+' / '+steps.length;root.querySelector('#guidePrev').disabled=i===0;root.querySelector('#guideNext').textContent=i===steps.length-1?'Начать играть':'Далее →'}
-function close(){document.getElementById('guide').hidden=true;try{localStorage.setItem(KEY,'1')}catch(e){}}
+function show(i){index=i;const root=document.getElementById('guide');if(!root.open)root.showModal();root.querySelector('#guideStep').textContent=steps[i].title;root.querySelector('#guideText').textContent=steps[i].text;root.querySelector('#guideCount').textContent=(i+1)+' / '+steps.length;root.querySelector('#guidePrev').disabled=i===0;root.querySelector('#guideNext').textContent=i===steps.length-1?'Начать играть':'Далее →'}
+function close(){const dlg=document.getElementById('guide');if(dlg.open)dlg.close();try{localStorage.setItem(KEY,'1')}catch(e){}}
 document.addEventListener('DOMContentLoaded',()=>{
 document.getElementById('guideOpen').addEventListener('click',()=>show(0));
 document.getElementById('guideClose').addEventListener('click',close);
 document.getElementById('guidePrev').addEventListener('click',()=>show(Math.max(0,index-1)));
 document.getElementById('guideNext').addEventListener('click',()=>index===steps.length-1?close():show(index+1));
 document.getElementById('guide').addEventListener('click',e=>{if(e.target.id==='guide')close()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('guide').hidden)close()});
-document.getElementById('startGame').addEventListener('click',()=>{try{if(!localStorage.getItem(KEY))show(0)}catch(e){}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('guide').open)close()});
+document.getElementById('startGame').addEventListener('click',()=>{try{if(!localStorage.getItem(KEY))show(0)}catch(e){show(0)}});
 });
 })();
