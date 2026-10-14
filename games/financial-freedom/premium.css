@@ -100,3 +100,19 @@ body:before{top:-20vw;left:-10vw}body:after{bottom:-22vw;right:-9vw}
 .board>.s-deal:before{background-position:100% 100%}
 .board>.space.current:after{background:linear-gradient(#3f321ba6,#443316ef)}
 @media(max-width:640px){.board>.space:before{bottom:13px}.board>.space:after{height:17px}.board>.space small{font-size:7px}}
+
+/* Illustrated offer portraits, using the same authored artwork as the board. */
+.event{padding-top:122px!important}
+.event .event-art{position:absolute;inset:0 0 auto;height:116px;z-index:0;background-image:linear-gradient(to bottom,transparent 40%,#073b51f9 100%),url('art/board-atlas.svg');background-size:100% 100%,600% 200%;background-position:center,0% 0%;background-repeat:no-repeat;opacity:1;font-size:0}
+.event .event-art.event-small{background-position:center,0% 0%}
+.event .event-art.event-big{background-position:center,20% 0%}
+.event .event-art.event-child{background-position:center,40% 0%}
+.event .event-art.event-expense{background-position:center,60% 0%}
+.event .event-art.event-market{background-position:center,80% 0%}
+.event .event-art.event-jobloss{background-position:center,0% 100%}
+.event .event-art.event-dream{background-position:center,60% 100%}
+.event .event-art.event-income{background-position:center,80% 100%}
+.event .event-art.event-deal{background-position:center,100% 100%}
+.event>h3,.event>p,.event>.deal-card,.event>.event-actions{position:relative;z-index:1}
+.event>h3{padding-right:0;text-shadow:0 2px 10px #001424}
+@media(max-width:640px){.event{padding-top:100px!important}.event .event-art{height:96px}}
