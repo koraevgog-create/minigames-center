@@ -122,3 +122,11 @@ body:before{top:-20vw;left:-10vw}body:after{bottom:-22vw;right:-9vw}
 .board-center h2{background:#04344c78;border-radius:14px;padding:10px 12px;backdrop-filter:blur(2px)}
 .board-center p{padding:5px 8px;border-radius:8px;background:#02324d99}
 .board-emblem{filter:drop-shadow(0 0 13px #ffdc83)}
+
+/* Real dice and pawn portraits cropped from the game's original art sheet. */
+.controlbar .die{position:relative;display:grid;place-items:end center;padding:0 0 1px;min-width:60px;height:56px;background: url('art/pieces.svg') 0 50% / 200% 100% no-repeat;border:0;border-radius:7px;color:#052e44;font-size:17px;font-weight:900;text-shadow:0 1px #fff9ed;filter:drop-shadow(0 3px 7px #001422)}
+.board .piece,.board .moving-token{display:block;width:34px;height:44px;font-size:0!important;background:url('art/pieces.svg') 100% 50% / 200% 100% no-repeat;border:0;filter:drop-shadow(0 2px 7px #ffe7a3);pointer-events:none}
+.board .piece{position:absolute;top:0;right:0}
+.board .moving-token{z-index:14}
+.player-avatar{font-size:0;background:url('art/pieces.svg') 100% 50% / 200% 100% no-repeat;border:1px solid #ffe6a7;filter:drop-shadow(0 0 5px #ffd37c)}
+@media(max-width:640px){.board .piece{width:22px;height:30px}.controlbar .die{min-width:56px}}
