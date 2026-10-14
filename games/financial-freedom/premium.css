@@ -1,0 +1,74 @@
+/* Version 0.7. Premium financial boardgame skin. Original layout, independent artwork layer. */
+:root{--p-gold:#ffe296;--p-turquoise:#51e4d1;--p-blue:#2b91e2;--p-text:#fff5dc}
+body{background:radial-gradient(ellipse at 50% -15%,#075973 0%,#042e4a 45%,#061a33 100%) fixed;color:#f0f8ff}
+body:before,body:after{content:"";position:fixed;z-index:-1;pointer-events:none;width:32vw;height:35vw;opacity:.22;filter:blur(30px);border-radius:50%;background:radial-gradient(circle,#00ffd2,transparent 70%)}
+body:before{top:-20vw;left:-10vw}body:after{bottom:-22vw;right:-9vw}
+.shell{max-width:1780px;padding:8px 14px}
+.topbar{background:linear-gradient(90deg,#003d59c9,#05294194);border:1px solid #2ea9c370;border-radius:14px;padding:8px 12px;box-shadow:inset 0 1px #a6edff38,0 6px 25px #0004}
+.brand{display:flex;align-items:center;color:#ffe5a2;font:800 clamp(15px,1.65vw,26px) Georgia,serif;letter-spacing:.025em;text-shadow:0 2px 12px #9b671d75;white-space:nowrap}
+.brand span:last-child{display:flex;flex-direction:column}
+.brand small{display:block;margin:5px 0 0;color:#ffd789;font:700 10px system-ui;letter-spacing:.09em}
+.brand .mark{height:40px;width:42px;background:linear-gradient(155deg,#ffe397,#b47d1f);box-shadow:0 0 13px #f9c35380;color:#123343;font:900 29px Georgia,serif}
+.header-goal{display:flex;flex-direction:column;gap:5px;max-width:440px;min-width:220px;border:1px solid #5fd1d57b;border-radius:12px;background:linear-gradient(155deg,#084866,#04314c);padding:9px 16px;box-shadow:inset 0 1px #8ce8e652}
+.header-goal b{color:var(--p-gold);font-size:13px}.header-goal span{color:#e7f6fb;font-size:11px;line-height:1.4}
+.version{color:#abd7df}.guide-trigger{background:linear-gradient(150deg,#315e73,#123b57);border:1px solid #80d1d48c;border-radius:12px;color:#fff4d5;padding:10px}
+.statbar{gap:8px}
+.statbar>div{background:linear-gradient(145deg,#145576,#052c48);border:1px solid #4fbbd3a1;box-shadow:inset 0 1px #ffffff36,0 4px 14px #0005;min-height:65px}
+.statbar>div:nth-child(1){border-color:#d6ae6f}.statbar>div:nth-child(2),.statbar>div:nth-child(4){background:linear-gradient(145deg,#08725d,#06404b)}
+.statbar span{font-size:12px;color:#c6e9f3}.statbar b{color:#ffecbd;font-size:clamp(16px,1.4vw,22px);text-shadow:0 1px 8px #0006}
+.progress-head{color:#e2eaf3;font-weight:700}.progress-head strong{color:#ffe7a7}.progress{background:#0c3452;border:1px solid #327b85;height:10px}
+.progress>div{background:linear-gradient(90deg,#29d9bb,#fce18c);box-shadow:0 0 15px #7cffc9}
+.workspace{grid-template-columns:minmax(0,1.7fr) minmax(345px,.63fr);gap:11px}
+.board-meta{padding:9px 13px;background:linear-gradient(95deg,#043d5d,#07566c);border:1px solid #3188a5;border-radius:11px;color:#e2f7ff}
+.board{background:radial-gradient(ellipse at 50% 35%,#0b8f9a 0%,#08727f 20%,#07566a 48%,#073858 70%,#042b42 100%);border:2px solid #e1b96c;border-radius:16px;box-shadow:0 0 0 3px #074458,inset 0 0 90px #043046,0 12px 26px #0009;gap:5px}
+.board-center{background:radial-gradient(ellipse at 47% 32%,#238ca4a9,#0c5771 38%,#084260 70%,#063451);border:2px solid #c5aa6e86;box-shadow:inset 0 0 90px #56f6e014,0 0 30px #051f30a8}
+.board-center h2{font:700 clamp(24px,2.8vw,46px)/1.05 Georgia,serif;color:#ffdf99;text-shadow:0 3px 12px #001727,0 1px 0 #d1a45a}
+.board-center p{font-size:12px;max-width:310px;color:#ddf8ff;font-weight:600}
+.board-emblem{color:#ffd68a;text-shadow:0 0 27px #ffc777;font-size:64px}
+.board>.space{border:2px solid #cdb87c;border-radius:9px;background:linear-gradient(160deg,#168cb7,#085779);box-shadow:inset 0 2px #ffffff7e,inset 0 -6px #02253a49,0 2px 8px #001f3380;overflow:hidden;padding:4px 2px}
+.space small{font-size:clamp(9px,.9vw,12px);color:#fff8ea;text-shadow:0 2px 5px #001b2c;font-weight:800;line-height:1.16;z-index:1}
+.space span{display:none}
+.board>.s-start,.board>.s-payday,.board>.s-income{background:linear-gradient(155deg,#53dd8e,#08683d);border-color:#ddde89}
+.board>.s-market{background:linear-gradient(155deg,#62d7f3,#0957a3);border-color:#94d9ff}
+.board>.s-big,.board>.s-deal{background:linear-gradient(155deg,#359ced,#173d9e);border-color:#c8c8ff}
+.board>.s-expense,.board>.s-jobloss{background:linear-gradient(155deg,#ff929e,#9b224a);border-color:#ffc6b9}
+.board>.s-charity,.board>.s-child{background:linear-gradient(155deg,#ed9fdc,#813d9b);border-color:#ffe0fa}
+.board>.s-dream{background:linear-gradient(155deg,#ffcb76,#876027);border-color:#fff3bf}
+.board>.space.current{outline:3px solid #fff4bb;outline-offset:-3px;box-shadow:0 0 17px 4px #f6d473a5,inset 0 2px #fff9b3}
+.piece{color:#fff5a0;font-size:19px!important;filter:drop-shadow(0 0 10px gold)}
+.controlbar{grid-template-columns:minmax(150px,.9fr) minmax(170px,1.35fr) minmax(0,2.8fr);background:linear-gradient(120deg,#064764,#073951);border:1px solid #2ba9d3;border-radius:14px;padding:8px;box-shadow:inset 0 2px #87d6ed38,0 5px 19px #0007}
+.dice-status{display:flex;align-items:center;gap:9px;min-width:0}.die{min-width:58px;height:54px;border:0;background:radial-gradient(circle,#fff8e2,#ffdc8c 75%);color:#123a4e;font-size:27px;text-shadow:none;box-shadow:0 3px 16px #fcd47962}
+.dice-hint{display:flex;flex-direction:column;gap:4px;min-width:0}.dice-hint strong{font-size:13px;color:#ffe5b4}.dice-hint small{font-size:10px;line-height:1.4;color:#c7e8ef}
+#roll{background:linear-gradient(160deg,#fff2a9,#f5c353 70%,#c89025);border:2px solid #ffedb1;color:#2b2412;font-size:clamp(13px,1.1vw,17px);text-shadow:0 1px #fff1ad;box-shadow:inset 0 2px #ffffffa3,0 0 18px #ffd16c66}
+.bank-actions{display:flex;align-items:stretch;gap:6px;min-width:0}.bank-actions button{flex:1;min-width:0;min-height:51px;white-space:normal;font-size:11px;background:linear-gradient(155deg,#2575ab,#104574);color:#ecf7ff;border:1px solid #6bc8f7}
+.bank-actions button:nth-last-child(2){background:linear-gradient(155deg,#5a778b,#253849)}
+.bank-actions button:last-child{background:linear-gradient(155deg,#9662cc,#50337b);border-color:#ca9bee}
+.loan-choice{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:90px;max-width:130px;color:#cce4ee;font-size:10px}
+.loan-choice select{width:100%;background:#0d3b57;color:#fff3c9;border:1px solid #70aebc;border-radius:7px;padding:5px;font-weight:700}
+.notice{background:linear-gradient(90deg,#0a5365,#0a3c50);border:1px solid #4ab2ad;border-radius:9px;color:#dcfff4}
+.panel,.setup-card{background:linear-gradient(150deg,#0a4961,#062c49 60%,#052840);border:1px solid #5ab8cb;border-radius:14px;box-shadow:inset 0 1px #e1fbff38,0 7px 20px #0006}
+.side>.panel{border-radius:14px;border-color:#3686a3}
+.dream{background:linear-gradient(115deg,#6b592d,#1b5260 50%,#0b3554);border-color:#f6d389!important}
+.dream h3{font-size:18px;color:#fff2ba}.dream p{color:#e6f4f0}
+.finance{background:linear-gradient(165deg,#0e4f70,#063150 58%,#08263e)}
+.panel-title h2{color:#fff2c6;font-size:20px}
+.player-summary{display:flex;align-items:center;gap:10px;padding:10px 8px;border:1px solid #368aa1;background:#083b57;border-radius:11px;margin:4px 0}
+.player-avatar{display:grid;place-items:center;background:linear-gradient(145deg,#f8df8f,#d09b3c);border:2px solid #ffeec4;border-radius:50%;color:#1c5962;width:45px;height:45px;font-size:26px}
+.player-summary>div:nth-child(2){display:flex;flex-direction:column;gap:4px}.player-summary strong{color:#fff;font-size:15px}.player-summary small{font-size:10px;color:#afcbd8}
+.player-flow{margin-left:auto;border:1px solid #3f96a6;border-radius:8px;background:#0d4862;padding:7px 9px;display:flex;flex-direction:column;gap:4px}
+.player-flow b{color:#6bf4b9;font-size:13px}.player-flow b.negative{color:#ff8499}
+.finance-tabs{background:#042c49;border:1px solid #1984a9}.finance-tabs button{color:#b4deed}
+.finance-tabs button.active{background:linear-gradient(145deg,#ffe69f,#b38939);border:1px solid #fff0b4;color:#203341;font-weight:800}
+.finance-group h3{font-size:12px;color:#f5d492}.financial-row{font-size:12px}.financial-row span{color:#c3e4ed}.financial-row b{color:#fff2d3}
+#history>div{color:#c5edf3}
+.event{background:linear-gradient(140deg,#0e5b72,#06344e);border:2px solid #d4af64;border-radius:15px;box-shadow:0 12px 35px #00192d8c}
+.event h3{color:#fff1bc}.deal-card{background:linear-gradient(145deg,#0c6270,#064058);border:1px solid #59d2c8}
+.deal-metrics>div{background:#0c3e57;border-color:#7cabbb6b}.deal-metrics b{color:#ffe5ae}.deal-metrics .positive b{color:#74ffbc}
+.event-actions button{background:linear-gradient(145deg,#197e91,#125077);border:1px solid #9bd3e3}
+.event-actions button:first-child{background:linear-gradient(145deg,#24bb94,#12705b);border-color:#8af5d5}
+.setup h1{color:#ffedc2}.setup h1 em{color:#7ff6c2}.setup-copy>p{color:#c6e4e8}.setup-card{border-color:#bc9d64}.setup-card h2{color:#ffe4a7}
+.guide-modal{border-color:#ffdb96}
+@media(max-width:1440px){.header-goal{max-width:290px}.brand{font-size:18px}.bank-actions button{font-size:10px}.dice-hint{display:none}.controlbar{grid-template-columns:65px minmax(140px,1fr) minmax(0,2.6fr)}}
+@media(max-width:1090px){.header-goal{display:none}.workspace{grid-template-columns:minmax(0,1fr) 330px}.controlbar{grid-template-columns:57px minmax(125px,1fr)}.bank-actions{grid-column:1/-1}.dice-status{justify-content:center}}
+@media(max-width:950px){.workspace{grid-template-columns:1fr}.controlbar{grid-template-columns:60px minmax(0,1fr) minmax(0,2fr)}.bank-actions{grid-column:auto}}
+@media(max-width:640px){.controlbar{grid-template-columns:60px 1fr}.bank-actions{grid-column:1/-1;flex-wrap:wrap}.bank-actions button{min-width:calc(33% - 6px)}.loan-choice{flex:1;max-width:none;min-width:100%}.dice-hint{display:none}.board{gap:2px}.board>.space{border-width:1px;padding:1px}.space small{font-size:7px}.brand small{font-size:8px}.statbar>div{min-height:56px}}
