@@ -8,7 +8,7 @@ function income(){return game.prof.salary+game.assets.reduce((s,a)=>s+a.monthly,
 function passive(){return game.assets.reduce((s,a)=>s+a.monthly,0)}
 function expenses(){const p=game.prof;return p.tax+p.housing+p.utilities+p.food+p.transport+p.other+p.debtPay+game.bankPay+game.children*p.childCost}
 function flow(){return income()-expenses()}
-function worth(){return game.cash+game.assets.reduce((s,a)=>s+a.cost-a.loan,0)-game.prof.debt-game.bankDebt}
+function worth(){return game.cash+game.assets.reduce((s,a)=>s+a.cost-a.loan,0)+Object.entries(game.shares||{}).reduce((v,[ticker,qty])=>v+qty*game.prices[ticker],0)-game.prof.debt-game.bankDebt}
 function line(text){logs.unshift(text);logs=logs.slice(0,12);renderLog()}
 function renderLog(){const e=$('history');e.replaceChildren();for(const item of logs){const p=document.createElement('div');p.textContent=item;e.appendChild(p)}}
 function persist(){if(!game)return;try{localStorage.setItem(KEY,JSON.stringify({game,logs}))}catch(e){}}
@@ -21,11 +21,13 @@ function renderFinances(){
  const spending=document.createElement('section');spending.className='finance-group';spending.innerHTML='<h3>Расходы и обязательства</h3>';
  const p=game.prof;for(const [label,key]of [['Налоги','tax'],['Жильё','housing'],['Коммунальные','utilities'],['Продукты','food'],['Транспорт','transport'],['Прочие','other'],['Платёж по личному долгу','debtPay']])spending.appendChild(details(label,p[key]));
  spending.append(details('Банковский кредит — платёж',game.bankPay),details('Дети: '+game.children,game.children*p.childCost),details('Личный долг — остаток',p.debt),details('Банковский долг — остаток',game.bankDebt));
+ const stocks=document.createElement('section');stocks.className='finance-group';stocks.innerHTML='<h3>Акции на бирже</h3>';
+ for(const st of D.stocks){const qty=(game.shares||{})[st.ticker]||0;const row=document.createElement('div');row.className='stock-row';const label=document.createElement('span');label.textContent=st.ticker+' · '+st.name+' · '+fmt(game.prices[st.ticker])+' / шт. · '+qty+' шт.';const buttons=document.createElement('div');const buy=document.createElement('button');buy.textContent='Купить';buy.disabled=!!active||game.ended||game.stage!=='rat'||game.cash<game.prices[st.ticker];buy.onclick=()=>trade(st.ticker,1);const sell=document.createElement('button');sell.textContent='Продать';sell.disabled=!!active||game.ended||qty===0;sell.onclick=()=>trade(st.ticker,-1);buttons.append(buy,sell);row.append(label,buttons);stocks.appendChild(row)}
  const assets=document.createElement('section');assets.className='finance-group';assets.innerHTML='<h3>Баланс активов</h3>';
  if(!game.assets.length){const x=document.createElement('p');x.textContent='Активов пока нет. Покупай их на клетках сделок.';assets.appendChild(x)}
  for(const a of game.assets){const row=document.createElement('div');row.className='asset-row';const name=document.createElement('div');name.innerHTML='<strong></strong><small></small>';name.querySelector('strong').textContent=a.name;name.querySelector('small').textContent='+'+fmt(a.monthly)+'/мес. · Долг '+fmt(a.loan);row.appendChild(name);
- const b=document.createElement('button');b.textContent='Продать';b.title='Продать по базовой стоимости и погасить долг по активу';b.onclick=()=>sellAsset(a.id,a.cost);row.appendChild(b);assets.appendChild(row)}
- stat.append(base,spending,assets);
+ const b=document.createElement('button');b.disabled=!!active||game.ended;b.textContent='Продать';b.title='Продать по базовой стоимости и погасить долг по активу';b.onclick=()=>sellAsset(a.id,a.cost);row.appendChild(b);assets.appendChild(row)}
+ stat.append(base,spending,stocks,assets);
  $('cash').textContent=fmt(game.cash);$('passive').textContent=fmt(passive());$('expenses').textContent=fmt(expenses());$('cashflow').textContent=fmt(flow());$('networth').textContent=fmt(worth());
  const percent=game.stage==='rat'?Math.min(100,passive()/Math.max(1,expenses())*100):Math.min(100,game.fastIncome/Math.max(1,game.fastGoal)*100);
  $('progressFill').style.width=percent+'%';
@@ -36,7 +38,7 @@ function renderFinances(){
  $('dreamName').textContent=game.dream.icon+' '+game.dream.name+' · '+fmt(game.dream.cost);
  $('roll').disabled=!!active||game.ended;
  $('borrow').disabled=!!active||game.stage==='fast'||game.ended;
- $('payDebt').disabled=!!active||game.bankDebt<=0||game.cash<=0||game.ended;
+ $('payDebt').disabled=!!active||game.bankDebt<=0||game.cash<=0||game.ended;$('payPersonal').disabled=!!active||game.prof.debt<=0||game.cash<=0||game.stage!=='rat'||game.ended;
  $('roll').textContent=game.ended?'Партия завершена':active?'Сначала реши событие':'🎲 Бросить кубик';
 }
 function renderBoard(){
@@ -55,12 +57,15 @@ function offer(title,description,buttons){active={title};const el=$('event');el.
  for(const item of buttons){const b=document.createElement('button');b.textContent=item.label;b.disabled=!!item.disabled;b.onclick=()=>{item.action()};actions.appendChild(b)}el.append(h,p,actions);renderFinances()}
 function done(message){clearEvent();if(message){line(message);status(message)}if(!game.ended&&game.stage==='rat'&&passive()>expenses()){game.stage='fast';game.pos=0;game.fastIncome=Math.max(10000,passive()*100);game.fastGoal=game.fastIncome+50000;status('🎉 Финансовая свобода! Ты переходишь на внешний круг.');line('Открыт внешний круг! Начальный доход: '+fmt(game.fastIncome));offer('Финансовая свобода','Ты вышел из круга обязательных расходов. Теперь твоя цель — приобрести мечту или увеличить доход внешнего круга.',[{label:'Продолжить',action:()=>{clearEvent();render()}}])}render()}
 function takeCharge(amount){if(game.cash<amount){const gap=amount-game.cash;game.bankDebt+=gap;game.bankPay+=Math.ceil(gap*.1);game.cash+=gap;line('Автоматический кредит для обязательного платежа: '+fmt(gap))}game.cash-=amount}
+function trade(ticker,direction){if(!game||active||game.ended||game.stage!=='rat')return;const price=game.prices[ticker],qty=game.shares[ticker]||0;if(direction>0&&game.cash<price)return;if(direction<0&&qty<=0)return;game.cash-=direction*price;game.shares[ticker]=qty+direction;done((direction>0?'Куплена':'Продана')+' акция '+ticker+' по '+fmt(price));}
+function marketUpdate(){for(const st of D.stocks){const old=game.prices[st.ticker];const move=1+(Math.random()*2-1)*st.volatility;game.prices[st.ticker]=Math.max(1,Math.round(old*move))}line('Биржа обновила котировки пяти компаний.')}
+function checkBankruptcy(){if(game.stage!=='rat'||game.ended)return false;game.insolvency=game.cash===0&&flow()<0?game.insolvency+1:0;if(game.insolvency>=3){game.ended=true;clearEvent();offer('⚠️ Банкротство','Три платёжных цикла подряд без денег при отрицательном денежном потоке. Партия завершена.',[{label:'Новая партия',action:()=>{$('setup').hidden=false;$('game').hidden=true;game=null;clearEvent();localStorage.removeItem(KEY)}}]);line('Банкротство. Партия завершена.');render();return true}return false}
 function handleDeal(kind){const item=copy(pick(kind==='small'?D.small:D.big));const hint='Стоимость '+fmt(item.cost)+'. Первый взнос '+fmt(item.down)+'. Кредит по активу '+fmt(item.cost-item.down)+'. Пассивный доход +'+fmt(item.monthly)+'/мес.';
  offer((kind==='small'?'◈ Небольшая сделка: ':'▣ Крупная сделка: ')+item.name,hint,[
  {label:'Купить · '+fmt(item.down),disabled:game.cash<item.down,action:()=>{game.cash-=item.down;game.assets.push({...item,id:++cardVersion,loan:item.cost-item.down});done('Куплено: '+item.name+'; денежный поток +'+fmt(item.monthly)+'/мес.')}},
  {label:'Отказаться',action:()=>done('Предложение пропущено: '+item.name)}])}
 function sellAsset(id,price){if(active||game.ended)return;const index=game.assets.findIndex(a=>a.id===id);if(index<0)return;const a=game.assets[index];game.cash+=price-a.loan;game.assets.splice(index,1);done('Продано: '+a.name+' за '+fmt(price)+', погашен долг '+fmt(a.loan))}
-function handleMarket(){const market=pick(D.markets);const matched=game.assets.filter(a=>market.category==='all'||a.category===market.category);const buttons=matched.map(a=>({label:'Продать «'+a.name+'» за '+fmt(a.cost*market.multiplier),action:()=>{clearEvent();sellAsset(a.id,Math.round(a.cost*market.multiplier))}}));buttons.push({label:'Пропустить',action:()=>done('Рынок: '+market.name)});offer('📈 '+market.name,market.detail+(matched.length?' Доступна продажа имеющихся активов.':' Подходящих активов пока нет.'),buttons)}
+function handleMarket(){marketUpdate();const market=pick(D.markets);const matched=game.assets.filter(a=>market.category==='all'||a.category===market.category);const buttons=matched.map(a=>({label:'Продать «'+a.name+'» за '+fmt(a.cost*market.multiplier),action:()=>{clearEvent();sellAsset(a.id,Math.round(a.cost*market.multiplier))}}));buttons.push({label:'Пропустить',action:()=>done('Рынок: '+market.name)});offer('📈 '+market.name,market.detail+(matched.length?' Доступна продажа имеющихся активов.':' Подходящих активов пока нет.'),buttons)}
 function handleExpense(){const e=pick(D.expenses);offer(e.icon+' '+e.name,'Обязательный непредвиденный расход: '+fmt(e.amount)+'. При нехватке денег возникает банковский кредит.',[{label:'Оплатить · '+fmt(e.amount),action:()=>{takeCharge(e.amount);done('Расход: '+e.name+' — '+fmt(e.amount))}}])}
 function handleChild(){if(game.children>=3){done('Семейное событие: дополнительные расходы не изменились.');return}
 offer('♥ Пополнение в семье','Новый ребёнок увеличит ежемесячные расходы на '+fmt(game.prof.childCost)+'.', [{label:'Продолжить',action:()=>{game.children++;done('В семье пополнение. Дети: '+game.children)}}])}
@@ -83,7 +88,7 @@ function step(){
  const spaces=game.stage==='rat'?D.track:D.fastTrack;
  const old=game.pos;game.pos=(game.pos+roll)%spaces.length;game.turn++;
  const raw=game.pos<old||roll>=spaces.length;
- if(game.stage==='rat'){for(let j=1;j<=roll;j++){const pos=(old+j)%spaces.length;if(spaces[pos]==='payday'){const amount=flow();game.cash+=amount;line('Зарплатный день: '+(amount>=0?'+':'')+fmt(amount));if(game.cash<0){game.bankDebt+=-game.cash;game.bankPay+=Math.ceil(-game.cash*.1);game.cash=0;line('При нехватке средств оформлен кредит')}}}}
+ if(game.stage==='rat'){for(let j=1;j<=roll;j++){const pos=(old+j)%spaces.length;if(spaces[pos]==='payday'){const amount=flow();game.cash+=amount;line('Зарплатный день: '+(amount>=0?'+':'')+fmt(amount));if(game.cash<0){game.bankDebt+=-game.cash;game.bankPay+=Math.ceil(-game.cash*.1);game.cash=0;line('Автоматический кредит для покрытия дефицита')}if(checkBankruptcy())return}}}
  $('dice').textContent='🎲 '+roll;
  line('Ход '+game.turn+': выпало '+roll+' · '+(game.stage==='rat'?'внутренний':'внешний')+' круг');
  if(game.stage==='fast'){handleFast(spaces[game.pos]);render();return}
@@ -99,7 +104,7 @@ function step(){
 }
 function start(){
  const p=D.professions.find(x=>x.id===$('profession').value)||D.professions[0],dream=D.dreams.find(x=>x.id===$('dream').value)||D.dreams[0];
- game={prof:copy(p),dream:copy(dream),stage:'rat',pos:0,turn:0,cash:p.cash,assets:[],children:0,bankDebt:0,bankPay:0,bonusRolls:0,fastIncome:0,fastGoal:0,ended:false};
+ game={prof:copy(p),dream:copy(dream),stage:'rat',pos:0,turn:0,cash:p.cash,assets:[],shares:{},prices:Object.fromEntries(D.stocks.map(st=>[st.ticker,st.price])),insolvency:0,children:0,bankDebt:0,bankPay:0,bonusRolls:0,fastIncome:0,fastGoal:0,ended:false};
  logs=[];cardVersion=0;clearEvent();$('setup').hidden=true;$('game').hidden=false;$('dice').textContent='🎲 —';status('Начинай ход. Твоя цель — пассивный доход выше расходов.');line('Новая партия: '+p.name+'. Мечта: '+dream.name);render();
 }
 function setup(){
@@ -108,8 +113,9 @@ function setup(){
  $('startGame').onclick=start;$('roll').onclick=step;
  $('borrow').onclick=()=>{if(!game||active||game.stage==='fast')return;const amount=5000;game.cash+=amount;game.bankDebt+=amount;game.bankPay+=500;line('Банковский кредит: +'+fmt(amount)+'; платёж +500 ₽/мес.');status('Кредит получен');render()};
  $('payDebt').onclick=()=>{if(!game||active||!game.bankDebt)return;const value=Math.min(5000,game.cash,game.bankDebt);if(value<=0)return;const before=game.bankDebt;game.bankDebt-=value;game.cash-=value;game.bankPay=Math.round(game.bankPay*game.bankDebt/before);done('Погашен банковский долг: '+fmt(value))};
+ $('payPersonal').onclick=()=>{if(!game||active||game.stage!=='rat'||game.ended||game.prof.debt<=0)return;const sum=Math.min(game.prof.debt,game.cash,1000);if(sum<=0)return;const old=game.prof.debt;game.prof.debt-=sum;game.prof.debtPay=Math.round(game.prof.debtPay*game.prof.debt/old);game.cash-=sum;done('Погашено личного долга: '+fmt(sum))};
  $('resetGame').onclick=()=>{if(!confirm('Завершить текущую партию и начать заново?'))return;game=null;active=null;logs=[];localStorage.removeItem(KEY);$('game').hidden=true;$('setup').hidden=false};
- try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved?.game?.prof&&saved.game.dream&&Array.isArray(saved.game.assets)){game=saved.game;logs=saved.logs||[];cardVersion=Math.max(0,...game.assets.map(a=>a.id||0));$('setup').hidden=true;$('game').hidden=false;status('Сохранённая партия восстановлена.');render()}}catch(e){}
+ try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved?.game?.prof&&saved.game.dream&&Array.isArray(saved.game.assets)){game=saved.game;game.shares=game.shares||{};game.prices=game.prices||Object.fromEntries(D.stocks.map(st=>[st.ticker,st.price]));game.insolvency=game.insolvency||0;logs=saved.logs||[];cardVersion=Math.max(0,...game.assets.map(a=>a.id||0));$('setup').hidden=true;$('game').hidden=false;status('Сохранённая партия восстановлена.');render()}}catch(e){}
 }
 document.addEventListener('DOMContentLoaded',setup);
 })();
