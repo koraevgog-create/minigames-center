@@ -35,6 +35,39 @@ window.FF_DATA={
  {name:'Сеть вендинговых точек',category:'business',cost:78000,down:20000,monthly:1260},
  {name:'Арендный дом',category:'property',cost:136000,down:39000,monthly:2030}
  ],
+ // Extended original investment decks: varying entry costs, debts and cashflow.
+ extendedSmall:[
+ {name:'Аренда складского бокса',category:'property',cost:16500,down:5900,monthly:225},
+ {name:'Торговый автомат в офисе',category:'business',cost:6100,down:2400,monthly:85},
+ {name:'Аренда электросамокатов',category:'business',cost:12100,down:5100,monthly:175},
+ {name:'Два парковочных места',category:'property',cost:18300,down:7300,monthly:240},
+ {name:'Мини-кофейный островок',category:'business',cost:19700,down:8200,monthly:295},
+ {name:'Аренда оборудования',category:'business',cost:8600,down:3100,monthly:125},
+ {name:'Мобильная фотостудия',category:'business',cost:14200,down:6000,monthly:205},
+ {name:'Доля в сервисном центре',category:'business',cost:23500,down:9800,monthly:315},
+ {name:'Студия для посуточной аренды',category:'property',cost:27000,down:11500,monthly:365},
+ {name:'Сервис подписки для бизнеса',category:'business',cost:11000,down:4700,monthly:160},
+ {name:'Гаражный комплекс',category:'property',cost:20500,down:7400,monthly:275},
+ {name:'Водомат в жилом районе',category:'business',cost:7900,down:2900,monthly:118},
+ {name:'Небольшая теплица',category:'business',cost:14700,down:5700,monthly:200},
+ {name:'Пункт выдачи заказов',category:'business',cost:25800,down:10500,monthly:355},
+ {name:'Аренда рекламного экрана',category:'business',cost:18700,down:7500,monthly:270},
+ {name:'Микроапартаменты',category:'property',cost:29800,down:12800,monthly:405}
+ ],
+ extendedBig:[
+ {name:'Гостевой дом на 12 номеров',category:'property',cost:215000,down:60000,monthly:3250},
+ {name:'Складской парк',category:'property',cost:192000,down:53000,monthly:2920},
+ {name:'Сеть автомастерских',category:'business',cost:175000,down:46000,monthly:2650},
+ {name:'Прачечная для гостиниц',category:'business',cost:85000,down:23000,monthly:1180},
+ {name:'Небольшой медицинский центр',category:'business',cost:246000,down:71000,monthly:3550},
+ {name:'Бизнес-центр в пригороде',category:'property',cost:310000,down:85000,monthly:4350},
+ {name:'Парк коммерческих павильонов',category:'property',cost:148000,down:41000,monthly:2100},
+ {name:'Производство упаковки',category:'business',cost:125000,down:34000,monthly:1830},
+ {name:'Аренда спецтехники',category:'business',cost:98000,down:26000,monthly:1420},
+ {name:'Сеть мастерских ремонта',category:'business',cost:119000,down:34000,monthly:1760},
+ {name:'Загородный коттеджный комплекс',category:'property',cost:275000,down:74000,monthly:3860},
+ {name:'Фабрика готовой еды',category:'business',cost:330000,down:92000,monthly:4700}
+ ],
  stocks:[
  {ticker:'NOVA',name:'Нова Энергия',price:25,dividend:0,volatility:.28},
  {ticker:'GRAD',name:'Град Девелопмент',price:45,dividend:1,volatility:.22},
@@ -51,6 +84,18 @@ window.FF_DATA={
  {name:'Поездка на выходные',amount:750,icon:'🧳'},
  {name:'Срочные бытовые расходы',amount:420,icon:'🧾'},
  {name:'Замена мебели',amount:1400,icon:'🛋️'}
+ ],
+ extendedMarkets:[
+ {name:'Рост спроса на парковку',category:'property',multiplier:1.24,detail:'Инвесторы готовы переплатить за арендные объекты в оживлённых районах.'},
+ {name:'Покупатель для малых предприятий',category:'business',multiplier:1.52,detail:'Крупная компания скупает небольшие прибыльные бизнесы.'},
+ {name:'Распродажа коммерческой недвижимости',category:'property',multiplier:.74,detail:'На рынке недвижимости кризис ликвидности.'},
+ {name:'Бум вендинговых проектов',category:'business',multiplier:1.31,detail:'Частные инвесторы активно скупают действующие бизнесы.'},
+ {name:'Осторожный рынок',category:'all',multiplier:.93,detail:'Покупатели выбирают только самые надёжные предложения.'},
+ {name:'Инвестиционная лихорадка',category:'all',multiplier:1.42,detail:'Стоимость прибыльных активов заметно выросла.'},
+ {name:'Биржевой подъём',category:'stock',multiplier:1.4,detail:'На финансовые инструменты наблюдается повышенный спрос.'},
+ {name:'Биржевой спад',category:'stock',multiplier:.78,detail:'Инвесторы временно избегают фондового рынка.'},
+ {name:'Сделки с арендаторами',category:'property',multiplier:1.17,detail:'Рост арендных ставок увеличил интерес к недвижимости.'},
+ {name:'Новый деловой цикл',category:'business',multiplier:1.18,detail:'Предприятия привлекают покупателей за счёт растущей выручки.'}
  ],
  markets:[
  {name:'Покупатели ищут недвижимость',category:'property',multiplier:1.28,detail:'На рынке спрос на объекты недвижимости.'},
