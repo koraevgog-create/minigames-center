@@ -1,0 +1,11 @@
+/* Market analysis — original finance UI extension. */
+.market-indices{font-size:11px;color:#b5d8df;line-height:1.5;padding:8px 10px;background:#0a3249;border:1px solid #3e7286;border-radius:8px}
+#finances .asset-row{align-items:center;gap:8px}
+#finances .asset-row>div{flex:1;min-width:0}
+#finances .asset-row small{font-size:11px;line-height:1.6;color:#b8dae4}
+#finances .asset-row button{flex:none}
+.deal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.deal-metrics>div{min-width:0}
+.deal-metrics b{font-size:clamp(11px,.9vw,15px);overflow-wrap:anywhere}
+.event .deal-note{border-left:3px solid #dcb975;padding:8px 10px;background:#0a3247;color:#dcebee}
+@media(max-width:620px){.deal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.market-indices{font-size:10px}}
