@@ -69,11 +69,11 @@ window.FF_DATA={
  {name:'Фабрика готовой еды',category:'business',cost:330000,down:92000,monthly:4700}
  ],
  stocks:[
- {ticker:'NOVA',name:'Нова Энергия',price:25,dividend:0,volatility:.28},
- {ticker:'GRAD',name:'Град Девелопмент',price:45,dividend:1,volatility:.22},
- {ticker:'VITA',name:'Вита Медиа',price:18,dividend:0,volatility:.42},
- {ticker:'SEVER',name:'Северный Холдинг',price:60,dividend:2,volatility:.18},
- {ticker:'FLOW',name:'Флоу Технологии',price:35,dividend:0,volatility:.37}
+ {ticker:'NOVA',name:'Нова Энергия',price:25,dividend:0,volatility:.14},
+ {ticker:'GRAD',name:'Град Девелопмент',price:45,dividend:1,volatility:.13},
+ {ticker:'VITA',name:'Вита Медиа',price:18,dividend:0,volatility:.20},
+ {ticker:'SEVER',name:'Северный Холдинг',price:60,dividend:2,volatility:.10},
+ {ticker:'FLOW',name:'Флоу Технологии',price:35,dividend:0,volatility:.17}
  ],
  expenses:[
  {name:'Ремонт бытовой техники',amount:600,icon:'🔧'},
