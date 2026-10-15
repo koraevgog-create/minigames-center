@@ -1,0 +1,19 @@
+/* Economy v1.0: dedicated bank panel; no changes to board dimensions */
+.loan-choice input,.loan-config select,.loan-actions input{background:#0e4056;color:#fdf1d2;border:1px solid #77b4c5;border-radius:7px;padding:7px;font:600 12px system-ui;max-width:100%;width:100%}
+.loan-choice input{height:33px}
+.bank-panel{background:linear-gradient(155deg,#135a6b,#0a374f);border:1px solid #d9bc7c;box-shadow:0 8px 24px #001e3088;border-radius:12px;padding:12px;display:grid;gap:10px;max-height:45vh;overflow-y:auto;scrollbar-width:thin}
+.bank-panel[hidden]{display:none}
+.bank-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bank-heading h3{margin:0;color:#ffe3a3;font:700 19px Georgia,serif}
+.bank-heading button{padding:6px 11px;font-size:11px}
+.loan-config{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #83bdc044;padding-bottom:9px}
+.loan-config label{min-width:165px;display:grid;gap:5px;font-weight:700;font-size:12px;color:#d7eff0}
+.loan-config p{font-size:11px;line-height:1.5;margin:0;color:#c3dce1}
+.loan-list{display:grid;gap:8px}
+.loan-card{padding:12px;border:1px solid #4a95a7;background:#092f47;border-radius:10px}
+.loan-card strong{color:#ffdf95;font-size:13px}.loan-card p{font-size:12px;line-height:1.6;margin:7px 0;color:#c8e2e8}
+.loan-actions{display:grid;grid-template-columns:minmax(120px,1fr) auto auto;gap:6px}
+.loan-actions button{background:#216778;border-color:#7ab3c1;padding:7px 8px;font-size:11px}
+.loan-actions button:last-child{background:#745a42;border-color:#c9a46e}
+.bank-error{color:#ffbbc2;font-size:12px;margin:0}.bank-error:empty{display:none}
+@media(max-width:620px){.bank-panel{max-height:none}.loan-config{align-items:stretch;flex-direction:column;gap:7px}.loan-config label{min-width:0}.loan-actions{grid-template-columns:1fr 1fr}.loan-actions input{grid-column:1/-1}}
