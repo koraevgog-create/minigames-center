@@ -1,0 +1,58 @@
+/* v0.9 — Phase 2: premium visual language. Geometry owned exclusively by foundation.css */
+:root{--lux-gold:#ffdb93;--lux-mint:#83efd1;--lux-cyan:#77dff3;--lux-shadow:#001a2a88}
+body{background:radial-gradient(ellipse at 51% -25%,#127e8c 0%,#075371 31%,#072b43 61%,#061929 100%) fixed;color:#edf9fa}
+.topbar{background:linear-gradient(115deg,#094c68,#0a3555 52%,#0b3854);border-color:#60a7b4;box-shadow:inset 0 1px #b5f8ff4a,0 7px 26px #00152769}
+.topbar>a{color:#c1e5ea;font-weight:600}.topbar>a:hover{color:#fff2ca}
+.brand{color:var(--lux-gold);text-shadow:0 2px 12px #c9863d48}.brand .mark{background:linear-gradient(155deg,#ffefb9,#e4b961 60%,#ab7c36);color:#17384a;box-shadow:inset 0 1px #fff9d3,0 3px 10px #0007}
+.brand small{color:#e3c58b}.header-goal{background:linear-gradient(155deg,#126079,#06334c);border-color:#78c5cc;box-shadow:inset 0 1px #ffffff22}.header-goal b{color:#ffe2a1}.header-goal span{color:#dcf3f6}
+.top-actions .guide-trigger{background:linear-gradient(140deg,#3b7793,#1c4c68);border-color:#78c0d2;color:#fff0cb;box-shadow:inset 0 1px #ffffff20}
+.version{color:#a9d5df}
+.statbar>div{background:linear-gradient(130deg,#1b5875,#0a344f);border-color:#4d9dba;box-shadow:inset 0 1px #dbfaff36,0 3px 10px #0019274d}
+.statbar>div:nth-child(1){border-color:#d9af65}.statbar>div:nth-child(2),.statbar>div:nth-child(4){background:linear-gradient(140deg,#167568,#094c55);border-color:#4abda7}
+.statbar span{color:#d0ecf1}.statbar b{color:#ffe5a9;text-shadow:0 1px 8px #00172666}.statbar>div:nth-child(2) b,.statbar>div:nth-child(4) b{color:#8bffcf}
+.progress-head{color:#d8edf0}.progress-head strong{color:#ffe0a5}.progress{background:#0e324d;box-shadow:inset 0 2px 4px #00192b7d;border:1px solid #35758a}
+.progress>div{background:linear-gradient(90deg,#22bea8,#8ce7ba 65%,#fce2a0);box-shadow:0 0 16px #62f4c070}
+.board-meta{background:linear-gradient(100deg,#0d5671,#0a3955);border-color:#60a7bc;box-shadow:inset 0 1px #c3f2ff22}
+.board{background:radial-gradient(ellipse at 50% 35%,#238c97,#126783 44%,#093c60 82%);border-color:#e4c082;box-shadow:0 0 0 2px #0b5772,inset 0 0 54px #0122395a,0 9px 29px #00132288}
+.board-center{background:radial-gradient(ellipse at 48% 23%,#267d8f,#175d7c 42%,#0c3a5a 90%);border-color:#9bc9c9;box-shadow:inset 0 1px #d0f8fc24,inset 0 -20px 55px #001e3955}
+.board-center h2{color:#ffe0a3;text-shadow:0 2px 10px #001526;font-weight:700}.board-center p{color:#dcf3f6}.board-emblem{color:#fbe1a2;text-shadow:0 0 22px #e8bf78a1}
+.board>.space{border-color:#b9d5cc;box-shadow:inset 0 1px #ffffff6a,inset 0 -5px #00182425,0 2px 6px #001e3370;transition:filter .15s,border-color .15s}
+.board>.space:hover{filter:brightness(1.1);border-color:#fff1cb}
+.board>.space span{color:#fff1bf;text-shadow:0 1px 8px #042735}.board>.space small{color:#fffdf6;text-shadow:0 1px 4px #001828}
+.board>.s-start,.board>.s-payday,.board>.s-income{background:linear-gradient(155deg,#4cae81,#187a66 65%,#126350)}
+.board>.s-small{background:linear-gradient(155deg,#4c9fb6,#1e698c)}
+.board>.s-big,.board>.s-deal{background:linear-gradient(155deg,#398fc6,#245689)}
+.board>.s-market{background:linear-gradient(155deg,#617fae,#345a92)}
+.board>.s-expense,.board>.s-jobloss{background:linear-gradient(155deg,#dc8593,#9e4d67)}
+.board>.s-child,.board>.s-charity{background:linear-gradient(155deg,#ac85c0,#775991)}
+.board>.s-dream{background:linear-gradient(155deg,#e0ba75,#986f38)}
+.board>.space.current{outline-color:#fff0bc;box-shadow:inset 0 1px #fff,0 0 17px #ffdc8da8}
+.controlbar{background:linear-gradient(115deg,#0b5975,#083851);border-color:#61afc3;box-shadow:inset 0 1px #dcffff3b,0 5px 22px #00172b88}
+.die{background:linear-gradient(145deg,#fffbee,#eed7a5);border-color:#ffefca;box-shadow:inset 0 1px #fff,0 3px 11px #0018275e;color:#0b3c59}
+#roll{background:linear-gradient(165deg,#fff0ad,#f0c76c 65%,#cc9637);border-color:#ffefbb;box-shadow:inset 0 2px #fff8db,0 3px 12px #e2a34b55;color:#173a4d;text-shadow:0 1px #fff3cf}
+#roll:not(:disabled):hover{filter:brightness(1.07)}
+.loan-choice{color:#d5eef2}.loan-choice select{background:#0c4963;border-color:#74b8c7;color:#ffedc7}
+.bank-actions button{background:linear-gradient(155deg,#327faf,#175a83);border-color:#7abbda;color:#f5faff;box-shadow:inset 0 1px #ffffff32}
+.bank-actions button:nth-last-child(2){background:linear-gradient(155deg,#59778c,#30495d);border-color:#9db6c4}
+.bank-actions button:last-child{background:linear-gradient(155deg,#956ab8,#68458b);border-color:#c8a4df}
+.notice{background:linear-gradient(100deg,#166273,#0c435b);border-color:#5fa5aa;color:#d5f9e8}
+.side>.panel{background:linear-gradient(150deg,#12536e,#0b3755 67%,#092c48);border-color:#5b9db5;box-shadow:inset 0 1px #dcfaff31,0 5px 18px #001c2d55}
+.side>.dream{background:linear-gradient(118deg,#635838,#1b5765 46%,#0a385b)!important;border-color:#e5bd79!important;box-shadow:inset 0 1px #ffeeaf45,0 4px 13px #001b2a80}
+.dream .overline{color:#f9d48c}.dream h3{color:#ffe6b0}.dream p{color:#def0ec}
+.panel-title h2{color:#ffdf9d}.panel-title span{color:#aed5df}
+.player-summary{background:linear-gradient(125deg,#104961,#0c3650);border-color:#518ea2}.player-avatar{background:linear-gradient(145deg,#fff1c2,#c99949);color:#123e51;border:1px solid #ffe6b5;box-shadow:0 2px 9px #001c2b78}
+.player-summary small{color:#c1dce6}.player-flow b{color:#8bffce}.player-flow b.negative{color:#ffa6ad}
+.finance-tabs{background:#082e49;border-color:#457f99}.finance-tabs button{color:#c0dfe8;transition:background .15s,color .15s}.finance-tabs button:hover{background:#26617b}.finance-tabs button.active{background:linear-gradient(145deg,#ffe4a1,#cf9f53);border-color:#ffe9b1;color:#183749;box-shadow:inset 0 1px #fff4ca}
+.finance-group{border-color:#4b7b8c66}.finance-group h3{color:#f5d18b}.financial-row span{color:#c6e3e9}.financial-row b{color:#fff4d9}
+.stock-row,.asset-row{border-color:#5a91a050}.stock-row button,.asset-row button{border-color:#70b0bf;background:#186476}
+.history #history>div{color:#c9e3e7;border-color:#4d819144}
+.event{background:linear-gradient(155deg,#185b70f7,#0d3a53f9);border-color:#f2cd8b;box-shadow:0 14px 42px #0018299a}
+.event h3{color:#ffe4a3;text-shadow:0 2px 8px #00283b}.event p{color:#e0f1f3}
+.deal-card{background:linear-gradient(145deg,#15576a,#0c394e);border-color:#7eafb8}.deal-category{color:#ffdf9b;border-color:#cda663;background:#7560394d}
+.deal-metrics>div{background:#103c54;border-color:#4a8495}.deal-metrics small{color:#bfdce3}.deal-metrics b{color:#ffedce}.deal-metrics .positive b{color:#8ff8c8}
+.event-actions button{background:linear-gradient(145deg,#277f95,#155873);border:1px solid #7ac4d1;color:#f9ffff}.event-actions button:first-child{background:linear-gradient(155deg,#279c83,#186a63);border-color:#8de4c1}
+button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #ffe7a4;outline-offset:3px}
+button:disabled{filter:saturate(.55);opacity:.55;box-shadow:none}
+.setup-card{background:linear-gradient(145deg,#16586b,#0a3650);border-color:#d4b178}.setup-card h2{color:#ffe5ab}.setup h1{color:#fff0cf}.setup h1 em{color:#9effd7}.setup-copy>p{color:#d5e9e9}
+.guide-modal{border-color:#e6c38b}.guide-modal .guide-dialog{background:linear-gradient(145deg,#246575,#0b354e)}.guide-dialog h2{color:#ffe5a6}
+@media(prefers-reduced-motion:reduce){.board>.space,.finance-tabs button{transition:none}}
