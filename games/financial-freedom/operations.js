@@ -5,13 +5,13 @@ const clamp=(n,low,high)=>Math.max(low,Math.min(high,n));
 function ensure(a){
  if(!a.operations){
  const baseline=Math.round(a.monthly||0),property=a.category==='property';
- const gross=Math.round(baseline/(property?.7:.6));
+ const gross=Math.round(baseline/(property ? .7 : .6));
  const expenses=gross-baseline;
  a.operations={gross,expenses,baseNet:baseline,occupancy:1,condition:100,earned:0,months:0,missed:0};
  }
  const op=a.operations;op.gross=Math.max(0,Number(op.gross)||0);op.expenses=Math.max(0,Number(op.expenses)||0);
  op.occupancy=clamp(Number(op.occupancy)||0,0,1);op.condition=clamp(Number(op.condition)||0,40,100);op.earned=Number(op.earned)||0;op.months=Number(op.months)||0;
- a.monthly=Math.round(op.gross*op.occupancy-op.expenses);
+ a.monthly=Math.round(op.gross*op.occupancy*(.7+.3*op.condition/100)-op.expenses);
  return op;
 }
 function initialize(g){for(const a of g.assets||[])ensure(a)}
@@ -26,7 +26,7 @@ function month(g){
    else if(Math.random()<.07){op.occupancy=0;op.missed++;events.push('🏠 '+a.name+': простой, арендатор съехал')}
  }else{
    // Recurring business demand may drop or recover; expenses continue.
-   op.occupancy=clamp(Math.round((op.occupancy+(Math.random()-.48)*.16)*100)/100,.65,1.2);
+   op.occupancy=clamp(Math.round((op.occupancy+(Math.random()-.48)*.16)*100)/100,.65,1);
  }
  op.condition=clamp(op.condition-(property?1:.8),40,100);
  a.monthly=Math.round(op.gross*op.occupancy-op.expenses);
