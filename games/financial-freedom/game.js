@@ -118,6 +118,7 @@ function step(){
  else if(type==='market')handleMarket();
  else if(type==='expense')handleExpense();
  else if(type==='child')handleChild();
+ else if(type==='familyBonus'){const gift=Math.round(game.prof.salary*.06/100)*100;game.cash+=gift;done('♥ Семейная поддержка: +'+fmt(gift)+' — без новых постоянных расходов.')}
  else if(type==='charity')handleCharity();
  else if(type==='jobloss')handleJobLoss();
  else done(type==='payday'?'Зарплатный день!':'Переход по игровому полю.');
