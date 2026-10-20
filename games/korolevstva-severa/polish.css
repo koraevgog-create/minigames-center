@@ -1,0 +1,30 @@
+/* Northern Kingdoms · v0.4 · Modern RTS surface. Styling does not affect gameplay geometry. */
+:root{--ink:#091e26;--panel:#102d35;--gold:#efd39c;--mint:#8fe6c7;--rim:#779c9c}
+body{background:#112821;color:#e9f5ef}
+.top{background:linear-gradient(115deg,#103c45f5,#0b2836f8 66%,#152e36f6);border-color:#7da6a1;box-shadow:0 10px 35px #000b,inset 0 1px #b6ecea24;backdrop-filter:blur(14px);border-radius:13px}
+.brand strong{color:#fce6b2;text-shadow:0 2px 14px #c28a5360;letter-spacing:.04em}
+.brand a{background:#1e4850;border:1px solid #487b7f;color:#d6eeea;transition:background .16s}
+.brand a:hover{background:#316c77}
+.resources span{background:linear-gradient(145deg,#183c43,#0d2935);border:1px solid #4c8285;box-shadow:inset 0 1px #ffffff14;min-width:74px;text-align:center}
+.resources span b{color:#ffdf9f;font-variant-numeric:tabular-nums}
+button{background:linear-gradient(165deg,#326270,#1a3f50);border:1px solid #759f9d;border-radius:9px;color:#fff1d2;box-shadow:inset 0 1px #ffffff32,0 3px 8px #001c2a55;transition:transform .13s,background .15s,filter .15s}
+button:hover:not(:disabled){filter:brightness(1.13);transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(1px)}
+button.active,#touchOrder[aria-pressed="true"]{background:linear-gradient(145deg,#b58e4d,#6b4b2b);border-color:#ffe0a1;box-shadow:0 0 0 2px #ffdda65a;color:#fff6dc}
+#pause{border-color:#d0b479}
+.guide{background:#0d2934ea;border-color:#5f9ba0;box-shadow:0 8px 25px #0008;backdrop-filter:blur(10px);border-radius:10px;font-size:11px}
+.hud{background:linear-gradient(130deg,#284d51f7,#112c38fb 62%,#0e2531fb);border:1px solid #a98b5a;box-shadow:0 0 0 3px #082a3280,inset 0 1px #bdeee42a,0 12px 37px #000c;border-radius:16px;backdrop-filter:blur(12px)}
+.mapblock canvas{border:1px solid #e4c686;box-shadow:inset 0 0 15px #000c,0 0 0 2px #091f28;border-radius:8px}
+.portrait{background:radial-gradient(circle at 48% 22%,#5b807d,#1a454b 56%,#112a38 100%);border:1px solid #c9ab72;box-shadow:inset 0 1px #fff4c433,0 5px 20px #0006;border-radius:13px}
+.unitinfo h2{color:#f9e1ab;text-shadow:0 1px 8px #17151b}
+.unitinfo p{color:#c4e3df}.unitinfo small{color:#a9ebcf}
+.actiongrid button{background:linear-gradient(135deg,#245b65,#133b4c);border-color:#5f969c;line-height:1.35}
+.actiongrid button:hover:not(:disabled){border-color:#f2cb81}
+.commands button{background:#163e4b;border-color:#4f8490}
+.commands kbd{background:#0b2a39;color:#ffd993;border:1px solid #8a784e;border-radius:4px;padding:2px 4px;font:700 10px system-ui}
+.toast.show{box-shadow:0 7px 20px #001d2ad1;border-color:#f2d29b}
+.objective{background:#0b2534c7;border:1px solid #497c83;border-radius:9px;padding:8px 12px;backdrop-filter:blur(6px)}
+.endcard{background:linear-gradient(140deg,#1b5662,#102d3d);box-shadow:0 16px 70px #000d}
+@media(max-width:1050px){.resources span{min-width:0}}
+@media(max-width:670px){.top{max-height:100px}.resources{flex-wrap:nowrap;overflow:auto}.resources span{font-size:10px}.hud{height:146px}.mapblock{height:130px}.actiongrid button{font-size:10px;min-height:39px}.toast{bottom:162px}}
+@media(prefers-reduced-motion:reduce){button{transition:none}*{scroll-behavior:auto}}
