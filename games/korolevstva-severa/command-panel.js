@@ -5,6 +5,13 @@ toggle.onclick=()=>{expanded=!expanded;contentEl.hidden=!expanded;toggle.setAttr
 difficulty.onchange=()=>{R.setDifficulty(difficulty.value);label.textContent=difficulty.selectedOptions[0].textContent};
 function draw(){count.textContent=R.upgradeStatus()+'/4';if(difficulty.value!==R.difficulty){difficulty.value=R.difficulty;label.textContent=difficulty.selectedOptions[0].textContent}const q=R.researchQueue;progress.textContent=q?'⏳ '+R.techs[q.id].name+' · '+Math.min(100,Math.round(q.progress/q.time*100))+'%':'Выберите исследование';list.replaceChildren();if(!expanded)return;
 for(const [id,t] of Object.entries(R.techs)){const b=document.createElement('button'),done=!!R.upgrades[id],busy=!!q;b.type='button';b.className='tech-button'+(done?' researched':'');b.disabled=done||busy;b.title=t.description;b.innerHTML='<strong></strong><span class="tech-price"></span><small></small>';b.querySelector('strong').textContent=t.icon+' '+t.name;b.querySelector('.tech-price').textContent=done?'✓ Изучено':t.cost[0]+' 🟡 · '+t.cost[1]+' 🪵';b.querySelector('small').textContent=t.description;b.onclick=()=>{R.tech(id);draw()};list.appendChild(b)}}
-const original=R.hud;R.hud=()=>{original();draw();const b=R.selected.find(e=>e.kind==='building'&&e.team===0&&e.type==='barracks');if(!b)return;const actions=document.getElementById('actions');for(const [type,labelText] of [['guardian','🛡 Страж 190/100'],['crossbow','🏹 Арбалетчик 185/110']]){const btn=document.createElement('button');btn.textContent=labelText;btn.title='Обучить: '+R.unitsInfo[type].name;btn.onclick=()=>R.train(type);actions.appendChild(btn)}};
+const original=R.hud;R.hud=()=>{original();draw();const actions=document.getElementById('actions');
+const add=(label,fn,title='')=>{const btn=document.createElement('button');btn.textContent=label;btn.title=title||label;btn.onclick=fn;actions.appendChild(btn)};
+if(R.selected.some(e=>e.team===0&&e.kind==='unit'&&e.type==='worker')){add('🟡 Добывать золото',()=>R.autoGather('gold'),'Отправить выбранных рабочих к ближайшей золотой жиле');add('🪵 Добывать дерево',()=>R.autoGather('tree'),'Отправить выбранных рабочих рубить деревья')}
+const b=R.selected.find(e=>e.kind==='building'&&e.team===0);
+if(!b)return;
+if(b.type==='barracks')for(const [type,labelText] of [['guardian','🛡 Страж 190/100'],['crossbow','🏹 Арбалетчик 185/110']])add(labelText,()=>R.train(type),'Обучить: '+R.unitsInfo[type].name);
+if(b.queue.length)add('↩ Отменить последнего',()=>R.cancelTraining(b),'Вернуть 75% ресурсов последнего заказа');
+};
 const oldReset=R.reset;R.reset=()=>{oldReset();draw()};draw();
 })();
