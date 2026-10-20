@@ -25,6 +25,6 @@ let touchStart=null;
 field.addEventListener('touchstart',e=>{if(e.touches.length===2)touchStart={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2,dist:Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)}},{passive:true});
 field.addEventListener('touchmove',e=>{if(e.touches.length!==2||!touchStart)return;e.preventDefault();const x=(e.touches[0].clientX+e.touches[1].clientX)/2,y=(e.touches[0].clientY+e.touches[1].clientY)/2,dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);const old=R.zoom;R.zoom=R.clamp(R.zoom*dist/touchStart.dist,.62,1.65);R.cam.x=R.clamp(R.cam.x+(touchStart.x-x)/old,0,Math.max(0,R.world.w-innerWidth/R.zoom));R.cam.y=R.clamp(R.cam.y+(touchStart.y-y)/old,0,Math.max(0,R.world.h-innerHeight/R.zoom));touchStart={x,y,dist};R.drag=null},{passive:false});
 field.addEventListener('touchend',()=>{touchStart=null});
-let last=0,timer=0;function frame(now){const dt=Math.min(.045,Math.max(0,(now-last)/1000||.016));last=now;R.update(dt);R.draw();timer+=dt;if(timer>.55){timer=0;R.hud()}requestAnimationFrame(frame)}
+let last=0,timer=0;function frame(now){const dt=Math.min(.045,Math.max(0,(now-last)/1000||.016));last=now;R.update(dt*(R.speed||1));R.draw();timer+=dt;if(timer>.55){timer=0;R.hud()}requestAnimationFrame(frame)}
 R.reset();requestAnimationFrame(frame);
 })();
