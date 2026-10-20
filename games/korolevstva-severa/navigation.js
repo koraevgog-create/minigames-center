@@ -1,0 +1,14 @@
+(()=>{'use strict';
+const R=window.RTS,S=42,W=Math.ceil(R.world.w/S),H=Math.ceil(R.world.h/S),N=W*H;
+const cell=p=>({x:Math.max(0,Math.min(W-1,Math.floor(p.x/S))),y:Math.max(0,Math.min(H-1,Math.floor(p.y/S)))}),id=(x,y)=>y*W+x,center=(x,y)=>({x:(x+.5)*S,y:(y+.5)*S});
+function obstacle(){const blocked=new Uint8Array(N);for(const b of R.buildings){if(b.hp<=0)continue;const rad=b.size*.8+15;for(let y=Math.max(0,Math.floor((b.y-rad)/S));y<=Math.min(H-1,Math.ceil((b.y+rad)/S));y++)for(let x=Math.max(0,Math.floor((b.x-rad)/S));x<=Math.min(W-1,Math.ceil((b.x+rad)/S));x++)if(R.dist(center(x,y),b)<rad)blocked[id(x,y)]=1}return blocked}
+function route(from,to){const blocked=obstacle(),a=cell(from),b=cell(to),start=id(a.x,a.y);
+let goal=id(b.x,b.y);if(blocked[goal]){let min=Infinity;for(let i=0;i<N;i++)if(!blocked[i]){const dx=i%W-b.x,dy=Math.floor(i/W)-b.y,d=dx*dx+dy*dy;if(d<min){min=d;goal=i}}}
+if(start===goal)return [to];
+const scores=new Float32Array(N),costs=new Float32Array(N),prev=new Int32Array(N),closed=new Uint8Array(N);scores.fill(Infinity);costs.fill(Infinity);prev.fill(-1);scores[start]=0;costs[start]=Math.hypot(a.x-goal%W,a.y-Math.floor(goal/W));const open=[start],seen=new Uint8Array(N);seen[start]=1;let success=false,loops=0;const dirs=[[0,1,1],[0,-1,1],[1,0,1],[-1,0,1],[1,1,1.414],[-1,1,1.414],[1,-1,1.414],[-1,-1,1.414]];
+while(open.length&&loops++<N){let bi=0;for(let i=1;i<open.length;i++)if(costs[open[i]]<costs[open[bi]])bi=i;const current=open.splice(bi,1)[0];seen[current]=0;if(current===goal){success=true;break}closed[current]=1;const x=current%W,y=Math.floor(current/W);for(const [dx,dy,price] of dirs){const nx=x+dx,ny=y+dy;if(nx<0||nx>=W||ny<0||ny>=H)continue;const next=id(nx,ny);if((blocked[next]&&next!==goal)||closed[next])continue;if(dx&&dy&&(blocked[id(nx,y)]||blocked[id(x,ny)]))continue;const cost=scores[current]+price;if(cost>=scores[next])continue;prev[next]=current;scores[next]=cost;costs[next]=cost+Math.hypot(nx-goal%W,ny-Math.floor(goal/W));if(!seen[next]){open.push(next);seen[next]=1}}}
+if(!success)return [to];const points=[];for(let i=goal;i!==start&&i>=0;i=prev[i]){points.push(center(i%W,Math.floor(i/W)));if(points.length>N)break}points.reverse();if(!blocked[id(b.x,b.y)])points.push(to);return points.length?points:[to]}
+function assign(u){const o=u.order;if(!o||!['move','attackMove'].includes(o.action))return;o.waypoints=route(u,o);o.point=0}
+function steering(u,o){if(!o?.waypoints)return null;while(o.point<o.waypoints.length&&R.dist(u,o.waypoints[o.point])<14)o.point++;return o.waypoints[o.point]||null}
+R.nav={route,assign,steering};
+})();
