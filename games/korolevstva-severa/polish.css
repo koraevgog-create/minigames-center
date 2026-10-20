@@ -31,3 +31,8 @@ button.active,#touchOrder[aria-pressed="true"]{background:linear-gradient(145deg
 
 /* v0.5 tactical information */
 .wave-counter{color:#bfe1eb;white-space:nowrap}.wave-counter b{color:#f3d08b;font-variant-numeric:tabular-nums}@media(max-width:880px){.wave-counter{display:none}}
+
+/* v0.6 combat HUD */
+.combat-stats{white-space:nowrap;color:#b7dfd8;font-size:11px;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+#selectionCount{display:block;min-height:16px;color:#e2cc90;font-size:11px}
+@media(max-width:1170px){.combat-stats{display:none}}
