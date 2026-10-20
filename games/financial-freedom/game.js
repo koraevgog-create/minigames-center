@@ -16,13 +16,14 @@ function scaledWorld(){if(D._rublesV2)return;D._rublesV2=true;const mul=30;for(c
 function migrate(game){
  balance.migrate(game);
  const offers=[...D.small,...D.big,...D.extendedSmall,...D.extendedBig];
+ const legacy=game.economyVersion<2;
  for(const a of game.assets||[]){
   if(a.operations){delete a.operations}
   if(game.dealBalanceVersion!==4){
    const canonical=offers.find(x=>x.name===a.name);
-   const down=a.purchaseDown??a.down??(a.cost-a.loan);
+   const down=(a.purchaseDown??a.down??(a.cost-a.loan))*(legacy?30:1);
    if(canonical){const baseDown=canonical.down*30;const fair=Math.min(Math.round(baseDown*.027),Math.max(Math.round(canonical.monthly*18),Math.round(baseDown*(a.category==='stock'?.008:.012))));a.monthly=Math.round(fair*down/baseDown)}
-   else a.monthly=Math.min(Math.round(down*.027),Math.max(0,Math.round(a.monthly||0)));
+   else a.monthly=Math.min(Math.round(down*.027),Math.max(0,Math.round((a.monthly||0)*(legacy?30:1))));
   }
  }
  game.dealBalanceVersion=4;
@@ -30,7 +31,7 @@ function migrate(game){
  const m=30;
  for(const k of ['cash','bankDebt','bankPay','fastIncome','fastGoal','fastIncomeBase'])if(Number.isFinite(game[k]))game[k]*=m;
  for(const k of ['salary','tax','housing','utilities','food','transport','other','childCost','debt','debtPay'])if(Number.isFinite(game.prof[k]))game.prof[k]*=m;
- for(const a of game.assets)for(const k of ['cost','down','monthly','loan'])if(Number.isFinite(a[k]))a[k]*=m;
+ for(const a of game.assets)for(const k of ['cost','down','loan'])if(Number.isFinite(a[k]))a[k]*=m;
  for(const a of game.fastAssets||[])for(const k of ['cost','income'])if(Number.isFinite(a[k]))a[k]*=m;
  for(const k in game.prices)game.prices[k]*=m;
  if(game.dream?.cost)game.dream.cost*=m;
