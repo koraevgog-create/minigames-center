@@ -17,7 +17,7 @@ const byId=new Map([...R.units,...R.buildings,...R.resources].map(e=>[e.id,e]));
 R.selected=(v.selected||[]).map(id=>byId.get(id)).filter(Boolean);R.placing=null;R.paused=false;R.ended=false;speedBtn.textContent='▶ ×'+R.speed;R.hud?.();R.toast('📂 Партия восстановлена');return true
 }catch(err){R.toast('Не удалось открыть сохранение: '+err.message);return false}}
 function hasSave(){try{return !!localStorage.getItem(KEY)}catch{return false}}
-R.saveGame=save;R.loadGame=restore;R.speed=1;
+R.saveGame=save;R.loadGame=restore;R.speed=1;const originalReset=R.reset;R.reset=()=>{R.speed=1;originalReset();speedBtn.textContent='▶ ×1'};
 const top=document.querySelector('.topactions');const saveBtn=document.createElement('button'),loadBtn=document.createElement('button');saveBtn.type=loadBtn.type='button';saveBtn.id='saveGame';loadBtn.id='loadGame';saveBtn.textContent='💾 Сохранить';loadBtn.textContent='📂 Загрузить';saveBtn.title='Сохранить партию (Ctrl+S)';loadBtn.title='Продолжить сохранённую игру';saveBtn.onclick=save;loadBtn.onclick=restore;const speedBtn=document.createElement('button');speedBtn.id='speedGame';speedBtn.type='button';speedBtn.textContent='▶ ×1';speedBtn.title='Скорость симуляции 1×/2×';speedBtn.onclick=()=>{R.speed=R.speed===2?1:2;speedBtn.textContent='▶ ×'+R.speed;R.toast('Скорость игры: '+R.speed+'×')};top.prepend(speedBtn);top.prepend(loadBtn);top.prepend(saveBtn);
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();save()}});
 if(hasSave()){loadBtn.classList.add('has-save');loadBtn.title='Есть сохранённая партия';}
