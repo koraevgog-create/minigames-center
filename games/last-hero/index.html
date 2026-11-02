@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="styles.css"></head>
 <body>
 <div class="app">
-<header class="topbar"><a href="../../">← Все игры</a><strong>ПОСЛЕДНИЙ ГЕРОЙ</strong><span>Версия 0.4.3</span></header>
+<header class="topbar"><a href="../../">← Все игры</a><strong>ПОСЛЕДНИЙ ГЕРОЙ</strong><span>Версия 0.4.4</span></header>
 <div class="hud">
  <div>❤️ Здоровье <b id="hp"></b></div><div>⭐ Уровень <b id="level"></b></div>
  <div>🌊 Волна <b id="wave"></b></div><div>💀 Убито <b id="kills"></b></div><div>⏱ Время <b id="timer"></b></div>
@@ -30,10 +30,10 @@
     <div id="achievements" class="awards tab-pane"></div>
     <div id="help" class="tab-pane help-pane"><h3>Управление</h3><p>Ходьба — <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> или стрелки. Мышь / касание — движение к точке. Клик по врагу — приоритетная цель.</p><p><kbd>Shift</kbd> — рывок · <kbd>H</kbd> — зелье · <kbd>E</kbd> — круговой удар · <kbd>Q</kbd> — важная цель · <kbd>Esc</kbd> — сброс цели · <kbd>Space</kbd> — пауза.</p><p>Сундуки открываются при приближении. После волны торговец продаёт улучшения; в инвентаре можно продавать лишнюю экипировку.</p></div>
   </div>
-  <button id="restart" class="restart-btn">↻ Новый забег</button>
+  <section id="records" class="records" aria-label="Рекорды забегов"></section><button id="restart" class="restart-btn">↻ Новый забег</button>
  </aside>
 </div>
 </div>
 <div id="overlay" class="overlay" hidden><div class="dialog"><h2 id="modalTitle"></h2><p id="modalText"></p><div id="choices"></div></div></div>
-<script src="items.js" defer></script><script src="inventory.js" defer></script><script src="art.js" defer></script><script src="ui.js" defer></script><script src="game.js" defer></script>
+<script src="items.js" defer></script><script src="inventory.js" defer></script><script src="art.js" defer></script><script src="ui.js" defer></script><script src="records.js" defer></script><script src="game.js" defer></script>
 </body></html>
