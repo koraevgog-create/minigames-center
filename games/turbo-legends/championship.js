@@ -11,16 +11,16 @@ function load(){try{const data=JSON.parse(localStorage.getItem(KEY)||'null');if(
 function table(){const standings=[{id:'YOU',name:'ТЫ',score:championship?.points?.YOU||0},...RIVALS.map(name=>({id:name,name,score:championship?.points?.[name]||0}))];return standings.sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'en'))}
 function labels(){const d=championship;if(!d)return;const stage=Math.min(d.stage,ROUTE.length-1),track=G.tracks[ROUTE[stage]];
 $('champProgress').textContent=d.finished?'ЧЕМПИОНАТ ЗАВЕРШЁН':'ЭТАП '+(stage+1)+' / '+ROUTE.length+' · '+track.name;
-$('champStart').textContent=d.finished?'🏆 ИТОГИ ЧЕМПИОНАТА':d.stage===0?'🏁 СТАРТ ЧЕМПИОНАТА':'▶ ПРОДОЛЖИТЬ ЧЕМПИОНАТ';
+$('champStart').textContent=d.finished?'🏁 НОВЫЙ СЕЗОН':d.stage===0?'🏁 СТАРТ ЧЕМПИОНАТА':'▶ ПРОДОЛЖИТЬ ЧЕМПИОНАТ';
 $('champContinue').hidden=d.finished;
 $('champAbort').hidden=false;const rows=$('champStanding');rows.replaceChildren();const board=table();for(let i=0;i<Math.min(8,board.length);i++){const row=document.createElement('div');row.className='champ-row'+(board[i].id==='YOU'?' champ-you':'');const left=document.createElement('span'),right=document.createElement('b');left.textContent=(i+1)+'. '+board[i].name;right.textContent=board[i].score+' оч.';row.append(left,right);rows.appendChild(row)}
 $('champHistory').textContent=d.results.length?'Пройдено этапов: '+d.results.length+' из '+ROUTE.length+'. '+d.results.map((x,i)=>ROUTE[i].toUpperCase()+' — '+x.rank+' место').join(' · '):'Четыре гонки. 20 пилотов. Очки суммируются между этапами.';
 $('champStatus').textContent=d.finished?'Готово! Чемпионат завершён. Можно начать новый сезон.':'Чемпионат сохраняется автоматически после каждой гонки. Между этапами можно улучшить машину в гараже.';
 $('champCard').hidden=false}
-function showMenu(){const menu=$('menu');menu.hidden=false;$('champCard').hidden=false;labels()}
-function startNew(){championship=initial();safe();labels();return go()}
-function go(){if(!championship||championship.finished)return false;if(G.state.phase!=='menu')return false;const track=ROUTE[championship.stage];$('track').value=track;$('track').disabled=true;G.start();return true}
-function abandon(){championship=null;try{localStorage.removeItem(KEY)}catch{}$('track').disabled=false;$('champCard').hidden=true;$('champFinish').hidden=true;$('champStart').textContent='🏆 НАЧАТЬ ЧЕМПИОНАТ';$('champAbort').hidden=true}
+function showMenu(){const menu=$('menu');menu.hidden=false;if(!championship){$('champCard').hidden=true;return}$('champCard').hidden=false;labels()}
+function startNew(){championship=initial();$('champFinish').hidden=true;safe();labels();return go()}
+function go(){if(!championship||championship.finished)return false;if(G.state.phase!=='menu')return false;$('champFinish').hidden=true;const track=ROUTE[championship.stage];$('track').value=track;$('track').disabled=true;G.start();return true}
+function abandon(){championship=null;try{localStorage.removeItem(KEY)}catch{}$('track').disabled=false;$('champCard').hidden=true;$('champFinish').hidden=true;$('champStart').textContent='🏆 НАЧАТЬ ЧЕМПИОНАТ';$('champAbort').hidden=true;$('again').textContent='↻ ЕЩЁ ОДИН ЗАЕЗД';$('again').onclick=()=>G.start();$('toMenu').onclick=()=>G.toMenu()}
 function finish(rank,rivals){if(!championship||championship.finished||G.state.track!==G.tracks[ROUTE[championship.stage]])return false;
 const racers=[{name:'YOU',z:G.state.player.z,t:G.state.time},...rivals.map(o=>({name:o.name,z:o.z,t:o.finished?o.finishTime:Infinity}))].sort((a,b)=>b.z-a.z||a.t-b.t);
 for(let i=0;i<racers.length;i++)championship.points[racers[i].name]=(championship.points[racers[i].name]||0)+POINTS[i];
@@ -40,7 +40,7 @@ const box=document.createElement('div');box.id='champFinish';box.className='cham
 const btn=document.createElement('button');btn.id='champStart';btn.className='primary champ-main-btn';btn.type='button';btn.textContent='🏆 НАЧАТЬ ЧЕМПИОНАТ';$('start').before(btn);
 btn.onclick=()=>{if(!championship||championship.finished)startNew();else go()};
 $('champContinue').onclick=go;$('champAbort').onclick=()=>{if(!confirm('Завершить чемпионат без награды за общий зачёт?'))return;abandon()};
-const regularStart=$('start');regularStart.onclick=()=>{if(championship&&!championship.finished){abandon()}$('track').disabled=false;G.start()};
+const regularStart=$('start');regularStart.onclick=()=>{if(championship){abandon()}$('track').disabled=false;G.start()};
 const originalMenu=G.toMenu;G.toMenu=()=>{originalMenu();$('track').disabled=!!championship&&!championship.finished;labels()};
 if(load()){labels();$('track').value=ROUTE[Math.min(championship.stage,3)];$('track').disabled=!championship.finished}
 }
