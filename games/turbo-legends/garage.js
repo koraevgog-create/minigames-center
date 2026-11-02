@@ -40,10 +40,11 @@ const tunes=$('garageUpgrades');tunes.replaceChildren();for(const u of UPGRADES)
 $('garageCareer').textContent='Заездов: '+profile.races+' · Побед: '+profile.wins+' · Заработано: '+displayMoney(profile.earned);
 }
 function reward(position){const rank=Math.max(1,Math.min(20,Math.floor(position)));return Math.max(150,Math.round((2100-(rank-1)*100)/50)*50)}
+function credit(amount){const n=Math.max(0,Math.floor(Number(amount)||0));profile.money+=n;profile.earned+=n;save();render();return n}
 function finish(rank){const amount=reward(rank);profile.money+=amount;profile.earned+=amount;profile.races++;if(rank===1)profile.wins++;save();const el=$('garageReward');if(el){el.textContent='🏆 Призовые: +'+displayMoney(amount)+' · Баланс: '+displayMoney(profile.money);el.hidden=false}render();return amount}
 function setup(){const panel=document.createElement('section');panel.id='garagePanel';panel.className='garage-panel';panel.innerHTML='<div class="garage-header"><strong>🔧 ГАРАЖ И ТЮНИНГ</strong><span>Баланс: <b id="garageMoney">0 ₽</b></span></div><div class="garage-current">Твоя машина: <b id="garageActive"></b><div id="garageStats"></div></div><div class="garage-label">АВТОМОБИЛИ</div><div id="garageCars" class="garage-cars"></div><div class="garage-label">УЛУЧШЕНИЯ ДЛЯ ВЫБРАННОГО АВТО</div><div id="garageUpgrades" class="garage-upgrades"></div><div id="garageCareer" class="garage-career"></div><p id="garageNotice" class="garage-notice" role="status"></p>';const menu=document.querySelector('.menu-card');const anchor=menu.querySelector('.race-options');menu.insertBefore(panel,anchor);
 const rewardEl=document.createElement('div');rewardEl.id='garageReward';rewardEl.className='garage-reward';rewardEl.hidden=true;document.querySelector('.finish-card').insertBefore(rewardEl,$('results'));
 $('carColor').value=currentCar().color;render()}
 load();setup();
-window.TurboGarage={profile,stats,finish,tune,selectCar,reward,render,cars:CARS,upgrades:UPGRADES};
+window.TurboGarage={profile,stats,finish,credit,tune,selectCar,reward,render,cars:CARS,upgrades:UPGRADES};
 })();
