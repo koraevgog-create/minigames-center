@@ -98,7 +98,7 @@ function playerCar(w,h){
 }
 function draw(){
  const {w,h}=layout();skyline(w,h,state.track);
- const road=roadView(w,h);roadside(w,h,road);drawLandmarks(w,h,road);opponents(w,h);playerCar(w,h);drawTelemetry(w,h);
+ const road=roadView(w,h);roadside(w,h,road);drawLandmarks(w,h,road);opponents(w,h);playerCar(w,h);drawTelemetry(w,h);window.TurboRaceMap?.draw();
  if(state.player.speed>210&&state.phase==='race'){ctx.strokeStyle='#ffffff13';ctx.lineWidth=1;for(let i=0;i<14;i++){const x=(i*167+state.time*250)%w,y=(i*109+state.time*190)%h;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(x-w/2)*.045,y+25);ctx.stroke()}}
 }
 
