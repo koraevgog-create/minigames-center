@@ -56,3 +56,7 @@
 .race-map canvas{width:100%;height:auto;display:block;border:1px solid #294558;border-radius:9px;margin-top:7px}.race-map.map-collapsed{width:176px}.race-map.map-collapsed canvas{display:none}
 @media(max-width:1050px){.race-map{bottom:115px;width:190px;left:8px;padding:7px}.race-map .map-head b{font-size:9px}}
 @media(max-width:650px){.race-map{left:8px;bottom:82px;width:152px;opacity:.88}.race-map.map-collapsed{width:135px}.race-map .map-head b{font-size:8px}}
+
+/* v1.0 — expanded finishing standings and compact race telemetry */
+.race-summary-v1{padding:12px 14px;margin:8px 0 14px;border:1px solid rgba(125,207,235,.26);border-radius:12px;background:rgba(20,47,66,.72);color:#d9f6ff;font-size:13px;line-height:1.6;font-weight:700}
+#results{max-height:min(42vh,410px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#53718e transparent}
