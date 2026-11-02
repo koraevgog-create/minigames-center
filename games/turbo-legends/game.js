@@ -15,7 +15,7 @@ const lapCount=3,roadWidth=1900,drawDistance=2700,cameraHeight=900;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,wrap=(v,l)=>((v%l)+l)%l;
 function curvature(z){const w=wrap(z,state.track.length);const v=state.track.twist;return (Math.sin(w/760)+.58*Math.sin(w/370+1.1)+.26*Math.sin(w/173+.6))*v;}
 function elevation(z){const w=wrap(z,state.track.length);return Math.sin(w/470)*140+Math.sin(w/173)*39;}
-function project(distance,position,height,w,h){const depth=Math.max(1,distance);const perspective=980/(depth+980);const road=roadWidth*perspective*w/1800;const y=h*.34+(h*.74)*(1-perspective)+height*perspective*.1;const x=w/2+position*perspective*w/1800;return {x,y,width:road,scale:perspective};}
+function project(distance,position,height,w,h){const depth=Math.max(1,distance);const perspective=980/(depth+980);const road=roadWidth*perspective*w/1800;const y=h*.34+(h*.74)*perspective+height*perspective*.1;const x=w/2+position*perspective*w/1800;return {x,y,width:road,scale:perspective};}
 function layout(){const dpr=Math.min(devicePixelRatio||1,2),w=Math.max(320,innerWidth),h=Math.max(300,innerHeight);if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);return {w,h};}
 function poly(pts,color){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fill();}
 function quad(a,b,color){poly([[a.x-a.width,a.y],[a.x+a.width,a.y],[b.x+b.width,b.y],[b.x-b.width,b.y]],color)}
