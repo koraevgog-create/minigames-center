@@ -48,3 +48,11 @@
 .lap-splits{position:fixed;z-index:4;top:285px;left:20px;width:170px;background:#091c31cc;border:1px solid #7899ae6e;padding:10px;border-radius:10px;color:#dbe9f1;pointer-events:none}
 .lap-splits>b{font-size:10px;color:#ffe0a2;letter-spacing:.12em}.lap-splits>div{font-size:11px;line-height:1.65;margin-top:4px;font-variant-numeric:tabular-nums}
 @media(max-width:650px){.race-flash{top:21%;font-size:14px;max-width:80vw;padding:9px 12px}.lap-splits{top:203px;left:8px;width:140px;padding:6px}.lap-splits>div{font-size:9px}}
+
+/* v0.9 circuit radar and track intelligence */
+.race-map{position:fixed;z-index:5;left:20px;bottom:86px;width:250px;padding:10px;background:linear-gradient(140deg,#0b1b2fee,#142d42e8);border:1px solid #87a7bb80;border-radius:15px;box-shadow:0 9px 29px #0009;backdrop-filter:blur(10px)}
+.race-map .map-head{display:flex;justify-content:space-between;align-items:center;gap:5px;font-size:11px;color:#efdbb1}
+.race-map .map-head b{font-size:10px}.race-map .map-head button{border:1px solid #6c91a5;background:#1a3850;color:#fff;border-radius:7px;padding:3px 9px;cursor:pointer}
+.race-map canvas{width:100%;height:auto;display:block;border:1px solid #294558;border-radius:9px;margin-top:7px}.race-map.map-collapsed{width:176px}.race-map.map-collapsed canvas{display:none}
+@media(max-width:1050px){.race-map{bottom:115px;width:190px;left:8px;padding:7px}.race-map .map-head b{font-size:9px}}
+@media(max-width:650px){.race-map{left:8px;bottom:82px;width:152px;opacity:.88}.race-map.map-collapsed{width:135px}.race-map .map-head b{font-size:8px}}
