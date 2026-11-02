@@ -41,16 +41,16 @@ function roadPoint(d,w,h){
  return p;
 }
 function roadView(w,h){
- const t=state.track,seg=35,road=[];
+ const t=state.track,seg=24,road=[];
  for(let d=0;d<=drawDistance;d+=seg){const p=roadPoint(d,w,h);road.push({d,z:state.player.z+d,...p})}
  const horizonY=road[road.length-1].y;
  for(let i=road.length-2;i>=0;i--){const far=road[i+1],near=road[i];if(near.y<=far.y)continue;
- const band=Math.floor(far.z/125)%2;
+ const band=Math.floor(far.z/115)%2;
  ctx.fillStyle=t.ground[band];ctx.fillRect(0,far.y,w,near.y-far.y+2);
  const borderFar={...far,width:far.width*1.09},borderNear={...near,width:near.width*1.09};
  quad(borderFar,borderNear,band?'#f8eee5':'#ef6372');
  quad(far,near,t.road[band]);
- const stripe=Math.floor(far.z/70)%3===0;
+ const stripe=Math.floor(far.z/95)%3===0;
  if(stripe)for(const lane of [-.33,.33]){const fw=Math.max(1,far.width*.012),nw=Math.max(1,near.width*.012);poly([[far.x+far.width*lane-fw,far.y],[far.x+far.width*lane+fw,far.y],[near.x+near.width*lane+nw,near.y],[near.x+near.width*lane-nw,near.y]],'#e9e8d8');}
  if(Math.floor(far.z/25)%2===0){ctx.strokeStyle='#ffffff09';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(far.x-far.width,far.y);ctx.lineTo(far.x+far.width,far.y);ctx.stroke();}
  }
@@ -92,14 +92,33 @@ function playerCar(w,h){
  if(state.phase==='menu')return;
  const p=state.player;const steering=(state.keys.right||state.touch.right?1:0)-(state.keys.left||state.touch.left?1:0);
  const boost=p.boosting;
- const width=Math.min(w*.19,h*.255),x=w*.5+p.x*w*.023,y=h*.91;
+ const width=Math.min(w*.19,h*.255),x=w*.5+p.x*w*.023+(p.collide>0?Math.sin(state.time*80)*Math.min(12,p.collide*6):0),y=h*.91+(p.collide>0?Math.cos(state.time*70)*3:0);
  if(boost){ctx.save();ctx.globalAlpha=.85;for(const side of [-.28,.28]){poly([[x+side*width-8,y],[x+side*width+8,y],[x+side*width,y+width*(.28+Math.random()*.20)]],'#64e3fa');}ctx.restore()}
  carShape(x,y,width,p.color,-p.drift*.075,true,!!(state.keys.brake||state.touch.brake));
 }
 function draw(){
  const {w,h}=layout();skyline(w,h,state.track);
- const road=roadView(w,h);roadside(w,h,road);opponents(w,h);playerCar(w,h);
+ const road=roadView(w,h);roadside(w,h,road);drawLandmarks(w,h,road);opponents(w,h);playerCar(w,h);drawTelemetry(w,h);
  if(state.player.speed>210&&state.phase==='race'){ctx.strokeStyle='#ffffff13';ctx.lineWidth=1;for(let i=0;i<14;i++){const x=(i*167+state.time*250)%w,y=(i*109+state.time*190)%h;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(x-w/2)*.045,y+25);ctx.stroke()}}
+}
+
+function drawLandmarks(w,h,road){
+ const t=state.track;
+ for(let i=road.length-7;i>=3;i-=4){const point=road[i],idx=Math.floor(point.z/175),size=point.scale;if(idx%6!==0)continue;
+ const x=point.x+(idx%2?1:-1)*point.width*1.35,y=point.y,k=Math.max(.08,size*1.65);
+ ctx.save();ctx.translate(x,y);ctx.scale(k,k);
+ if(t.theme==='coast'){ctx.fillStyle='#e4d8a6';ctx.fillRect(-8,-110,16,110);for(let a=0;a<5;a++){ctx.save();ctx.rotate((a-2)*.54);poly([[0,-110],[-58,-154],[-22,-145]],'#25896e');ctx.restore()}}
+ else if(t.theme==='alpine'){poly([[-53,0],[-18,-136],[6,-125],[36,0]],'#6d8190');poly([[-37,-48],[-18,-136],[6,-125],[21,-63]],'#dcebf6')}
+ else if(t.theme==='desert'){ctx.fillStyle='#2b7258';ctx.fillRect(-6,-106,12,106);ctx.fillRect(-28,-79,13,12);ctx.fillRect(16,-66,13,12);ctx.fillRect(-27,-79,10,36);ctx.fillRect(20,-66,10,27)}
+ else{ctx.fillStyle='#10283e';ctx.fillRect(-16,-130,32,130);ctx.fillStyle='#41c9d5';ctx.fillRect(-16,-130,32,4);ctx.fillStyle='#ee64b2';ctx.fillRect(-16,-18,32,4)}ctx.restore();
+ }
+ for(let lap=1;lap<=3;lap++){const d=lap*t.length-state.player.z;if(d<0||d>drawDistance)continue;const p=roadPoint(d,w,h),k=Math.max(.08,p.scale);ctx.save();ctx.translate(p.x,p.y);ctx.strokeStyle='#f7e3b2';ctx.lineWidth=Math.max(2,9*k);const height=280*k,span=p.width*.96;ctx.beginPath();ctx.moveTo(-span,0);ctx.lineTo(-span,-height);ctx.lineTo(span,-height);ctx.lineTo(span,0);ctx.stroke();ctx.fillStyle='#172237';ctx.fillRect(-span,-height-16*k,span*2,28*k);ctx.fillStyle='#fbe8bf';ctx.textAlign='center';ctx.font='900 '+Math.max(9,18*k)+'px system-ui';ctx.fillText('TURBO LEGENDS  ●  FINISH',0,-height+4*k);ctx.restore()}
+}
+function drawTelemetry(w,h){
+ const p=state.player;if(state.phase!=='race')return;
+ if(p.offRoad&&p.speed>45){ctx.save();ctx.globalAlpha=.24;const x=w/2+p.x*w*.023,y=h*.9;for(let i=0;i<5;i++){const k=(state.time*53+i*17)%40;ctx.fillStyle=i%2?'#ddc4a1':'#d6d4b5';ctx.beginPath();ctx.arc(x+(i%2?-1:1)*(40+k),y+k*1.3,6+k*.33,0,7);ctx.fill()}ctx.restore()}
+ if(p.speed>185){ctx.save();ctx.globalAlpha=Math.min(.28,(p.speed-165)/600);ctx.strokeStyle='#e6f8ff';ctx.lineWidth=2;for(let i=0;i<17;i++){const y=((i*141+state.time*(60+p.speed))%h),edge=i%2?-1:1,x=w/2+edge*(w*.3+(i*17)%Math.round(w*.19));ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+edge*21,y+24+p.speed*.12);ctx.stroke()}ctx.restore()}
+ if(p.health<50){ctx.save();ctx.fillStyle='rgba(242,62,66,'+((50-p.health)/550)+')';ctx.fillRect(0,0,w,h);ctx.restore()}
 }
 function createOpponents(){const t=state.track,d=state.difficulty;const multiplier=d==='easy'?.85:d==='hard'?1.11:1;state.rivals=Array.from({length:19},(_,i)=>({id:i,name:names[i],color:colors[i],lane:((i%4)-1.5)*.33,z:115+(18-i)*115,speed:(205+(i%7)*5.3+(19-i)*.62)*multiplier,drive:(i*7.13)%6,baseLane:((i%4)-1.5)*.33,braking:false,finished:false,finishTime:0}));}
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20':'🏆 Лучший результат: ещё не установлен'}
