@@ -19,3 +19,6 @@
 
 /* v0.5 driving telemetry */
 .speed small b{color:#f8d77d;font-size:13px}.road-warning{font-size:12px;font-weight:950;letter-spacing:.06em;color:#f9d98f;text-shadow:0 2px 9px #000;min-height:14px}.road-warning.danger{color:#fa6f6d;animation:road-alert .6s infinite alternate}.draft-badge{background:#0c5974bb;border:1px solid #8ee5ed;border-radius:8px;padding:7px 11px;color:#c3f8ff;font-size:10px;font-weight:900;text-shadow:none}.speed{min-width:150px}@keyframes road-alert{from{opacity:1}to{opacity:.45}}@media(max-width:620px){.road-warning{font-size:9px;max-width:140px;text-align:right}.draft-badge{font-size:8px;max-width:145px;padding:5px}.speed{min-width:85px}}
+
+.race-leaderboard{position:fixed;z-index:4;top:209px;left:20px;padding:11px 13px;max-width:300px;background:#081c31b9;border:1px solid #91adc14a;border-radius:11px;backdrop-filter:blur(8px);pointer-events:none}.race-leaderboard>b{font-size:10px;letter-spacing:.12em;color:#f3d795}.race-leaderboard>div{font-size:11px;color:#dceaf9;margin-top:5px;line-height:1.6}.best-record{margin:0 0 14px;color:#f2d698;background:#1b3044ad;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800}
+@media(max-width:620px){.race-leaderboard{top:145px;left:8px;max-width:195px;padding:7px}.race-leaderboard>b{font-size:8px}.race-leaderboard>div{font-size:9px}.best-record{font-size:11px}}
