@@ -155,11 +155,11 @@ function drawTelemetry(w,h){
 function createOpponents(){
  const multiplier=state.difficulty==='easy'?.87:state.difficulty==='hard'?1.1:1;
  state.rivals=Array.from({length:19},(_,i)=>{
- const row=9-Math.floor(i/2),column=i%2,gridZ=34+row*38;
- const lane=(column?0.35:-0.35)+(i%3-1)*.018;
- return {id:i,name:names[i],color:colors[i],lane,z:gridZ,speed:(224+(i%6)*8+(i%5)*1.7)*multiplier,
- velocity:0,drive:(i*7.13)%6,baseLane:lane,desiredLane:lane,aggression:.65+(i%7)*.07,
- braking:false,finished:false,finishTime:0,launchDelay:.08+(i%5)*.045,skill:.78+(i%8)*.035};
+ const row=9-Math.floor(i/2),column=i%2,gridZ=56+row*54;
+ const lane=column?.43:-.43;
+ return {id:i,name:names[i],color:colors[i],lane,z:gridZ,speed:(248+(i%6)*6.5+(i%5)*2)*multiplier,
+ velocity:0,drive:(i*7.13)%6,baseLane:lane,passTarget:null,passCooldown:.3+(i%5)*.35,
+ braking:false,finished:false,finishTime:0,launchDelay:.08+(i%5)*.045,skill:.93+(i%8)*.025};
  });
 }
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20'+(d.bestLap?' · лучший круг '+formatTime(d.bestLap):''):'🏆 Лучший результат: ещё не установлен'}
@@ -180,7 +180,7 @@ const garage=window.TurboGarage?.stats();
 const physics=window.TurboRacePhysics;
 if(physics){
  physics.vehicle(p,inputs,state.track,garage,dt);
- const participants=[...state.rivals,{z:p.z,lane:p.x,velocity:p.speed,finished:false,isPlayer:true}];
+ const participants=[...state.rivals,{id:'player',z:p.z,lane:p.x,velocity:p.speed,finished:false,isPlayer:true}];
  // Re-evaluate every car against the same race snapshot rather than a changing order.
  const plans=state.rivals.map(rival=>({...rival}));
  for(let i=0;i<state.rivals.length;i++){
@@ -191,7 +191,7 @@ if(physics){
    opponent.z=totalLength();opponent.finished=true;opponent.finishTime=state.time;
   }
  }
- const collision=physics.resolveInteractions(state,dt);
+ const collision=physics.resolveInteractions(state);
  if(collision){beep(120,.12);announce('💥 СТОЛКНОВЕНИЕ · -'+Math.round(Math.max(0,100-p.health))+'% состояния',1.5)}
 }else{
  // If the physics module cannot be loaded, the game remains steerable.
