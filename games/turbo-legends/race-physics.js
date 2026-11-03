@@ -21,16 +21,16 @@ function vehicle(p,inputs,track,garage,dt){
  const overSpeed=clamp((p.speed-safeSpeed)/100,0,1.6);
  p.steerVelocity=lerp(p.steerVelocity||0,steering,dt*(3.0+traction*2.1));
  const steeringForce=p.steerVelocity*(.34+speedRatio*.57)*traction;
- const centrifugal=curve*(.24+.73*speedRatio*speedRatio)/traction;
- const gripPenalty=overSpeed*.55*Math.sign(curve);
+ const centrifugal=curve*(.12+.52*speedRatio*speedRatio)/traction;
+ const gripPenalty=overSpeed*.26*Math.sign(curve);
  const targetLateral=steeringForce-centrifugal-gripPenalty;
  p.lateralVelocity=lerp(p.lateralVelocity||0,targetLateral,dt*(2.3+traction));
  p.x=clamp(p.x+p.lateralVelocity*dt*1.7,-2.25,2.25);
  p.drift=p.lateralVelocity;
  p.offRoad=Math.abs(p.x)>1.04;
  const edge=clamp((Math.abs(p.x)-1.04)/.9,0,1);
- const offRoadLoss=p.offRoad?70+edge*125:0;
- const extraCornerLoss=overSpeed>0.35?overSpeed*24:0;
+ const offRoadLoss=p.offRoad?32+edge*57:0;
+ const extraCornerLoss=overSpeed>0.35?overSpeed*16:0;
  p.speed=clamp(p.speed+(power+nitroPower-drag-braking-offRoadLoss-extraCornerLoss)*dt,0,boost?maxSpeed+75:maxSpeed);
  p.nitro=clamp(p.nitro+(boost?-34/(garage?.nitroEfficiency||1):6.4)*dt,0,capacity);
  p.boosting=boost;
@@ -67,7 +67,6 @@ function planAI(o,participants,track,dt,time){
  o.z+=o.velocity/3.6*dt;
 }
 function resolveInteractions(state,dt){
- const all=[{...state.player,lane:state.player.x,velocity:state.player.speed,isPlayer:true},...state.rivals];
  const p=state.player;
  for(const other of state.rivals){
   if(other.finished||Math.abs(other.z-p.z)>6.5||Math.abs(other.lane-p.x)>.24)continue;
