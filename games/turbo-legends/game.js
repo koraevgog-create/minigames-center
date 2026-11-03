@@ -240,16 +240,22 @@ let audioContext=null;function beep(freq=300,duration=.05){if(!state.audio)retur
 $('audio').onclick=()=>{state.audio=!state.audio;$('audio').textContent=state.audio?'🔊 Звук':'🔇 Звук';$('audio').setAttribute('aria-pressed',String(state.audio));beep(430,.08)};
 let accumulator=0;
 function frame(now){
- const elapsed=clamp((now-(state.last||now))/1000,0,.12);
+ // The previous frame loop silently discarded elapsed time when rendering was
+ // slow. At low FPS, 300 km/h could literally play at a fraction of real speed.
+ const elapsed=clamp((now-(state.last||now))/1000,0,.25);
  state.last=now;
  accumulator+=elapsed;
  const fixedStep=1/60;
  let ticks=0;
- while(accumulator>=fixedStep&&ticks<7){
-  update(fixedStep);accumulator-=fixedStep;ticks++;
+ while(accumulator>=fixedStep&&ticks<16){
+  update(fixedStep);
+  accumulator-=fixedStep;
+  ticks++;
  }
- if(ticks===7)accumulator=0;
- draw();requestAnimationFrame(frame);
+ // Preserve bounded leftover simulation time instead of throwing it away.
+ if(accumulator>.25)accumulator=.25;
+ draw();
+ requestAnimationFrame(frame);
 }
 resetRace();requestAnimationFrame(frame);
 window.TurboLegends={state,start,update,draw,pause,toMenu,tracks,formatTime};
