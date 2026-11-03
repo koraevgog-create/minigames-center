@@ -130,6 +130,26 @@ function roadside(state,pts){
   }
  }
 }
+function roadsideReflectors(state,pts){
+ // Regular 18-metre roadside markers give a stable visual speed reference.
+ // At 180 km/h, nearly three pairs pass per real second.
+ const spacing=18,limit=750,z=state.player.z;
+ const start=Math.floor(z/spacing)+1,end=Math.floor((z+limit)/spacing);
+ for(let k=end;k>=start;k--){
+  const d=k*spacing-z,i=clamp(Math.floor(d/STEP),0,pts.length-2);
+  const f=(d-i*STEP)/STEP,a=pts[i],b=pts[i+1];
+  if(!a||!b)continue;
+  const x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f;
+  const width=a.width+(b.width-a.width)*f,scale=a.scale+(b.scale-a.scale)*f;
+  const height=clamp(40*scale,3,33),thickness=clamp(4*scale,1,5);
+  for(const side of [-1,1]){
+   const px=x+side*width*1.19;
+   c.fillStyle='#1b3040';c.fillRect(px-thickness*.5,y-height,thickness,height);
+   c.fillStyle=k%2?'#f8ead7':'#df354c';
+   c.fillRect(px-thickness*.5,y-height*.88,thickness,height*.35);
+  }
+ }
+}
 function car(x,bottom,width,color,lean,braking,player,variant=0){
  const w=width,h=w*(variant===1?.69:.60);if(w<3)return;
  c.save();c.translate(x,bottom);c.rotate(lean);
@@ -203,7 +223,7 @@ function render(state,canvas,out){
  const pal=palettes[state.track.theme]||palettes.coast;
  c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
  scenery(state,pal);
- const pts=model(state);asphalt(state,pal,pts);roadside(state,pts);window.TurboRaceEvents?.draw(state,c,pts);cars(state,pts);weather(state);
+ const pts=model(state);asphalt(state,pal,pts);roadsideReflectors(state,pts);roadside(state,pts);window.TurboRaceEvents?.draw(state,c,pts);cars(state,pts);weather(state);
  if(state.phase==='pause'){c.fillStyle='#071322a1';c.fillRect(0,0,W,H);c.fillStyle='#f5ebd2';c.font='900 48px system-ui';c.textAlign='center';c.fillText('ПАУЗА',W/2,H/2)}
  const dpr=Math.min(devicePixelRatio||1,2),bw=Math.max(320,innerWidth),bh=Math.max(300,innerHeight);
  if(canvas.width!==Math.round(bw*dpr)||canvas.height!==Math.round(bh*dpr)){canvas.width=Math.round(bw*dpr);canvas.height=Math.round(bh*dpr)}
