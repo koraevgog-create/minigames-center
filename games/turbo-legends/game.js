@@ -13,7 +13,7 @@ const names=['RAVEN','BLAZE','NOVA','STRIKE','FALCON','VECTOR','PHANTOM','SPEEDS
 const state={phase:'menu',track:tracks.coast,difficulty:'normal',time:0,count:3,last:0,player:{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,color:'#ef424e',collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1},rivals:[],keys:{},touch:{},position:20,results:[],engine:null,audio:false,soundTime:0,laps:[],lastLapTime:0,flashUntil:0,flashText:''};
 const RECORD_KEY='turbo-legends-records-01';let bestRecords={};try{bestRecords=JSON.parse(localStorage.getItem(RECORD_KEY)||'{}')||{}}catch{};let lastBoardAt=-10;const lapCount=3,roadWidth=1900,drawDistance=2700,cameraHeight=900;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,wrap=(v,l)=>((v%l)+l)%l;
-function curvature(z){const w=wrap(z,state.track.length);const v=state.track.twist;return (Math.sin(w/760)+.58*Math.sin(w/370+1.1)+.26*Math.sin(w/173+.6))*v;}
+function curvature(z){return window.TurboTrackModel?.curvature(z,state.track)||0;}
 function elevation(z){const w=wrap(z,state.track.length);return Math.sin(w/470)*140+Math.sin(w/173)*39;}
 function project(distance,position,height,w,h){const depth=Math.max(1,distance);const perspective=370/(depth+370);const road=w*.47*perspective;const y=h*.34+(h*.73)*perspective+height*perspective*.065;const x=w/2+position*perspective*w/1800;return {x,y,width:road,scale:perspective};}
 function layout(){const dpr=Math.min(devicePixelRatio||1,2),w=Math.max(320,innerWidth),h=Math.max(300,innerHeight);if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);return {w,h};}
@@ -30,14 +30,11 @@ function skyline(w,h,t){
  if(t.theme==='night'){for(let i=0;i<52;i++){const x=((i*97-parallax*.3)%(w+120)+w+120)%(w+120)-60;const ht=40+(i*37)%130;ctx.fillStyle=i%2?'#17243d':'#23324b';ctx.fillRect(x,h*.47-ht,32+(i*7)%28,ht);ctx.fillStyle='#e9d69c';for(let j=0;j<4;j++)if((i+j)%3===0)ctx.fillRect(x+7+j*8,h*.47-ht+14,3,5)}}
 }
 function roadCenter(d){
- // Integrate bends in the distance, anchored to the driver's current road position.
- const first=curvature(state.player.z);let turn=0;
- for(let z=0;z<d;z+=45){const k=curvature(state.player.z+z);turn+=(k*.27+first*.05)*45/30}
- return turn;
+ let heading=0,lateral=0;for(let a=0;a<d;a+=35){const step=Math.min(35,d-a);heading+=curvature(state.player.z+a)*step*.00052;lateral+=Math.sin(heading)*step}return lateral;
 }
 function roadPoint(d,w,h){
  const p=project(Math.max(1,d),0,elevation(state.player.z+d)-elevation(state.player.z),w,h);
- p.x=w*.5 + roadCenter(d)*p.scale*w/580 - state.player.x*p.width*.75;
+ p.x=w*.5 + roadCenter(d)*p.scale*w/630 - state.player.x*p.width*.75;
  return p;
 }
 function roadView(w,h){
@@ -120,9 +117,18 @@ function drawTelemetry(w,h){
  if(p.speed>185){ctx.save();ctx.globalAlpha=Math.min(.28,(p.speed-165)/600);ctx.strokeStyle='#e6f8ff';ctx.lineWidth=2;for(let i=0;i<17;i++){const y=((i*141+state.time*(60+p.speed))%h),edge=i%2?-1:1,x=w/2+edge*(w*.3+(i*17)%Math.round(w*.19));ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+edge*21,y+24+p.speed*.12);ctx.stroke()}ctx.restore()}
  if(p.health<50){ctx.save();ctx.fillStyle='rgba(242,62,66,'+((50-p.health)/550)+')';ctx.fillRect(0,0,w,h);ctx.restore()}
 }
-function createOpponents(){const t=state.track,d=state.difficulty;const multiplier=d==='easy'?.85:d==='hard'?1.11:1;state.rivals=Array.from({length:19},(_,i)=>({id:i,name:names[i],color:colors[i],lane:((i%4)-1.5)*.33,z:40+(18-i)*34,speed:(205+(i%7)*5.3+(19-i)*.62)*multiplier,velocity:0,drive:(i*7.13)%6,baseLane:((i%4)-1.5)*.33,braking:false,finished:false,finishTime:0}));}
+function createOpponents(){
+ const multiplier=state.difficulty==='easy'?.87:state.difficulty==='hard'?1.1:1;
+ state.rivals=Array.from({length:19},(_,i)=>{
+ const row=9-Math.floor(i/2),column=i%2,gridZ=13+row*15;
+ const lane=(column?0.35:-0.35)+(i%3-1)*.018;
+ return {id:i,name:names[i],color:colors[i],lane,z:gridZ,speed:(224+(i%6)*8+(i%5)*1.7)*multiplier,
+ velocity:0,drive:(i*7.13)%6,baseLane:lane,desiredLane:lane,aggression:.65+(i%7)*.07,
+ braking:false,finished:false,finishTime:0,launchDelay:.08+(i%5)*.045,skill:.78+(i%8)*.035};
+ });
+}
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20'+(d.bestLap?' · лучший круг '+formatTime(d.bestLap):''):'🏆 Лучший результат: ещё не установлен'}
-function resetRace(){const p=state.player;state.time=0;state.count=3;state.position=20;state.results=[];state.laps=[];state.lastLapTime=0;state.flashUntil=0;state.flashText='';Object.assign(p,{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1,color:$('carColor').value,nitro:window.TurboGarage?.stats().nitroCapacity||100});state.track=tracks[$('track').value]||tracks.coast;state.difficulty=$('difficulty').value;createOpponents();state.keys={};state.touch={};lastBoardAt=-10;}
+function resetRace(){const p=state.player;state.time=0;state.count=3;state.position=20;state.results=[];state.laps=[];state.lastLapTime=0;state.flashUntil=0;state.flashText='';Object.assign(p,{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1,steerVelocity:0,lateralVelocity:0,color:$('carColor').value,nitro:window.TurboGarage?.stats().nitroCapacity||100});state.track=tracks[$('track').value]||tracks.coast;state.difficulty=$('difficulty').value;createOpponents();state.keys={};state.touch={};lastBoardAt=-10;}
 function totalLength(){return state.track.length*lapCount}
 function update(dt){if(state.phase==='menu'||state.phase==='finish'||state.phase==='pause')return;if(state.phase==='countdown'){state.count-=dt;$('countdown').textContent=state.count>0?Math.ceil(state.count):'GO!';if(state.count<-.55){state.phase='race';$('countdown').hidden=true;$('hint').hidden=false}return}
 const p=state.player,g=state.keys.gas||state.touch.gas,b=state.keys.brake||state.touch.brake,n=state.keys.nitro||state.touch.nitro;
@@ -132,22 +138,52 @@ const garage=window.TurboGarage?.stats();const forward=state.rivals.filter(o=>o.
 p.slipstream=forward.length&&p.speed>100?clamp(p.slipstream+dt*.75,0,1):clamp(p.slipstream-dt*.9,0,1);
 const max=((garage?.maxSpeed||315)+p.slipstream*14)*(.72+.28*p.health/100),boost=n&&g&&p.nitro>0&&p.speed>55;
 p.boosting=boost;
-const acceleration=g?(105+p.slipstream*12)*(garage?.acceleration||1):-48;
-p.speed=clamp(p.speed+(acceleration-(b?240:0)-(boost?-145*(garage?.nitroBoost||1):0)-p.speed*.11)*dt,0,boost?max+85:max);
+const acceleration=g?(130+p.slipstream*12)*(garage?.acceleration||1)*(1-.38*p.speed/Math.max(250,max)):-48;
+const engineBoost=boost?165*(garage?.nitroBoost||1):0;
+p.speed=clamp(p.speed+(acceleration+engineBoost-(b?285:0)-p.speed*.095)*dt,0,boost?max+72:max);
 const nitroCap=garage?.nitroCapacity||100;p.nitro=clamp(p.nitro+(boost?-34/(garage?.nitroEfficiency||1):7)*dt,0,nitroCap);
 p.topSpeed=Math.max(p.topSpeed,p.speed);p.gear=clamp(Math.floor(p.speed/53)+1,1,6);
 const steer=(state.keys.right||state.touch.right?1:0)-(state.keys.left||state.touch.left?1:0);
-const bend=curvature(p.z),roadPull=bend*Math.pow(p.speed/270,2)*.16/(garage?.handling||1);
-const steerPower=(.72+.38*clamp(p.speed/155,0,1))*(p.offRoad?.62:1)*(garage?.handling||1);
-const previousDrift=p.drift;
-p.drift=lerp(previousDrift,steer*steerPower,clamp(dt*6,0,1));
-p.x+=p.drift*dt*1.48-roadPull*dt;
-p.x=clamp(p.x,-2.05,2.05);
+const bend=curvature(p.z),speedRatio=clamp(p.speed/220,0,1.5),handling=garage?.handling||1;
+p.steerVelocity=lerp(p.steerVelocity,steer,clamp(dt*(p.offRoad?3:5.2)*handling,0,1));
+const roadPull=bend*Math.pow(speedRatio,1.65)*.38/handling;
+const effectiveSteer=p.steerVelocity*(.52+.57*speedRatio)*handling;
+const desiredLateral=(effectiveSteer-roadPull)*(p.offRoad?.75:1);
+p.lateralVelocity=lerp(p.lateralVelocity,desiredLateral,clamp(dt*(p.offRoad?2.3:3.5),0,1));
+p.x=clamp(p.x+p.lateralVelocity*dt*1.48,-2.05,2.05);
+p.drift=p.lateralVelocity;
 p.offRoad=Math.abs(p.x)>1.07;
-if(p.offRoad){p.speed=Math.max(0,p.speed-(83+p.speed*.12)*dt);p.health=Math.max(30,p.health-.65*dt)}
-if(Math.abs(bend)>1.45&&p.speed>230&&!b){p.drift+=Math.sign(bend)*.014;p.speed=Math.max(0,p.speed-15*dt)}
+if(p.offRoad){p.speed=Math.max(0,p.speed-(100+p.speed*.16)*dt);p.health=Math.max(25,p.health-.75*dt)}
+const future=window.TurboTrackModel?.upcoming(p.z,state.track,205)||0;
+if(Math.abs(future)>1.25&&p.speed>225&&!b){p.speed=Math.max(0,p.speed-(Math.abs(future)-1.25)*29*dt)}
+
 p.z+=p.speed/3.6*dt;
-for(const o of state.rivals){if(o.finished)continue;const curve=Math.abs(curvature(o.z));const desired=o.speed*(1-clamp(curve*.085,0,.18));o.velocity=clamp((o.velocity||0)+(desired-o.velocity)*Math.min(1,dt*.56),0,desired);o.braking=o.velocity>desired+5;o.z+=o.velocity/3.6*dt;const ahead=state.rivals.find(v=>v!==o&&v.z>o.z&&v.z-o.z<55&&Math.abs(v.lane-o.lane)<.22);const targetLane=clamp(o.baseLane+(ahead?(o.lane>=0?-.24:.24):0)+Math.sin(state.time*.25+o.drive)*.045,-.83,.83);o.lane=lerp(o.lane,targetLane,Math.min(1,dt*(ahead?.95:.42)));if(o.z>=totalLength()){o.z=totalLength();o.finished=true;o.finishTime=state.time}}
+for(const o of state.rivals){
+ if(o.finished)continue;
+ const nextCurve=Math.abs(window.TurboTrackModel?.upcoming(o.z,state.track,200)||curvature(o.z));
+ const cornerLimit=nextCurve>1.4?153:nextCurve>.85?193:320;
+ const desired=Math.min(o.speed,cornerLimit*(.92+o.skill*.09));
+ const throttle=desired>o.velocity?96*o.skill:0;
+ const braking=desired<o.velocity?Math.min(160,(o.velocity-desired)*3.8):0;
+ o.braking=braking>8;
+ o.velocity=clamp(o.velocity+(throttle-braking-o.velocity*.035)*dt,0,o.speed);
+ if(o.launchDelay>0){o.launchDelay-=dt;o.velocity=Math.min(o.velocity,Math.max(0,(.25-o.launchDelay)*130))}
+ const nearby=state.rivals.filter(v=>v!==o&&!v.finished&&v.z>o.z&&v.z-o.z<68&&Math.abs(v.lane-o.lane)<.31).sort((a,b)=>a.z-b.z)[0];
+ const playerAhead=p.z>o.z&&p.z-o.z<58&&Math.abs(p.x-o.lane)<.3;
+ const obstacle=nearby||(playerAhead?{z:p.z,lane:p.x,velocity:p.speed}:null);
+ let targetLane=o.baseLane+Math.sin(state.time*.13+o.drive)*.035;
+ if(obstacle){
+  const gap=obstacle.z-o.z,passing=(o.id%2?1:-1);
+  const room=clamp(obstacle.lane+passing*.56,-.78,.78);
+  targetLane=room;
+  if(Math.abs(o.lane-obstacle.lane)<.27&&gap<26)o.velocity=Math.min(o.velocity,Math.max(0,(obstacle.velocity||0)-3));
+ }
+ const bend=curvature(o.z);targetLane-=clamp(bend*.11,-.19,.19);
+ o.lane=lerp(o.lane,clamp(targetLane,-.82,.82),clamp(dt*(obstacle?1.25:.55)*o.aggression,0,1));
+ o.z+=o.velocity/3.6*dt;
+ if(o.z>=totalLength()){o.z=totalLength();o.finished=true;o.finishTime=state.time}
+}
+
 if(!p.collide)for(const o of state.rivals){const delta=o.z-p.z;if(Math.abs(delta)<10&&Math.abs(o.lane-p.x)<.21){p.speed*=.83;p.health=Math.max(20,p.health-5);p.collide=1.05;o.lane=clamp(o.lane+(o.lane>p.x?.13:-.13),-.86,.86);beep(115,.11);break}}
 const oldRank=state.position,oldLap=p.lap;state.position=1+state.rivals.filter(o=>o.z>p.z).length;p.lap=Math.min(lapCount,Math.floor(p.z/state.track.length)+1);
 if(p.lap>oldLap){const split=state.time-state.lastLapTime;state.laps.push(split);state.lastLapTime=state.time;announce('🏁 КРУГ '+oldLap+' · '+formatTime(split),3.4);renderSplits();}
