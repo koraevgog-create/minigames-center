@@ -3,7 +3,7 @@
    Independent implementation built for Turbo Legends' metre-based engine. */
 (()=>{'use strict';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const SEGMENT=25,DRAW=3000;
+const SEGMENT=24,DRAW=3000;
 const specs={
  coast:[[-.8,0],[-.5,18],[0,0],[.35,-22],[.7,8]],
  alpine:[[0,0],[.23,60],[.46,-25],[.69,80],[.91,4]],
@@ -38,14 +38,14 @@ function sample(state,w=960,h=540){
  const {track,player:p}=state;
  const data=trackSegments(track);
  const points=[];
- const n=Math.ceil(DRAW/SEGMENT),base=Math.floor(p.z/SEGMENT);
+ const n=Math.ceil(DRAW/SEGMENT);
  // Camera follows the segment under the player; the horizon bends ahead.
- let position=0,derivative=0,previousCurve=window.TurboTrackModel?.curvature(p.z,track)||0;
+ let position=0,derivative=0;
  const baseHeight=heightAt(p.z,track);
  for(let i=0;i<=n;i++){
-  const world=base*SEGMENT+i*SEGMENT;
-  const d=Math.max(0,world-p.z);
-  const segment=data.segments[((base+i)%data.count+data.count)%data.count];
+  const world=p.z+i*SEGMENT;
+  const d=i*SEGMENT;
+  const segment=data.segments[Math.floor((((world%track.length)+track.length)%track.length)/SEGMENT)%data.count];
   if(i>0){
     position+=derivative;
     derivative+=segment.curve*.088;
