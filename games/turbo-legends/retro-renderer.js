@@ -209,7 +209,7 @@ function render(state,canvas,out){
  const pal=palettes[state.track.theme]||palettes.coast;
  c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
  scenery(state,pal);
- const pts=model(state);asphalt(state,pal,pts);roadside(state,pts);cars(state,pts);weather(state);
+ const pts=model(state);asphalt(state,pal,pts);roadside(state,pts);window.TurboRaceEvents?.draw(state,c,pts);cars(state,pts);weather(state);
  if(state.phase==='pause'){c.fillStyle='#071322a1';c.fillRect(0,0,W,H);c.fillStyle='#f5ebd2';c.font='900 48px system-ui';c.textAlign='center';c.fillText('ПАУЗА',W/2,H/2)}
  const dpr=Math.min(devicePixelRatio||1,2),bw=Math.max(320,innerWidth),bh=Math.max(300,innerHeight);
  if(canvas.width!==Math.round(bw*dpr)||canvas.height!==Math.round(bh*dpr)){canvas.width=Math.round(bw*dpr);canvas.height=Math.round(bh*dpr)}
