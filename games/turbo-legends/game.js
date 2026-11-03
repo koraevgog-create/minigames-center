@@ -153,17 +153,23 @@ function drawTelemetry(w,h){
  if(p.health<50){ctx.save();ctx.fillStyle='rgba(242,62,66,'+((50-p.health)/550)+')';ctx.fillRect(0,0,w,h);ctx.restore()}
 }
 function createOpponents(){
- const multiplier=state.difficulty==='easy'?.87:state.difficulty==='hard'?1.1:1;
+ const multiplier=state.difficulty==='easy'?.94:state.difficulty==='hard'?1.055:1;
+ // 13 drivers start ahead of the player, 6 behind: proper 14th starting position.
+ // Qualifying pace loosely follows the grid while individual driving styles vary.
  state.rivals=Array.from({length:19},(_,i)=>{
- const row=9-Math.floor(i/2),column=i%2,gridZ=65+row*42;
- const lane=column?.46:-.46;
- return {id:i,name:names[i],color:colors[i],lane,z:gridZ,speed:(228+(18-i)*2.65+(i%4)*2.8)*multiplier,
- velocity:0,drive:(i*7.13)%6,baseLane:lane,passTarget:null,passCooldown:.3+(i%5)*.35,
- braking:false,finished:false,finishTime:0,launchDelay:.08+(i%5)*.045,skill:.94+(18-i)*.003+(i%4)*.012};
+   const ahead=i<13;
+   const row=ahead?Math.floor((12-i)/2):Math.floor((i-13)/2);
+   const z=ahead?44+row*43:-40-row*43;
+   const lane=i%2?.43:-.43;
+   const pace=(ahead?277+(12-i)*1.05:265-(i-13)*1.8)+(i%4-1.5)*2.2;
+   return {id:i,name:names[i],color:colors[i],lane,z,speed:pace*multiplier,
+    velocity:0,drive:(i*7.13)%6,baseLane:lane,passTarget:null,
+    passCooldown:.5+(i%4)*.6,braking:false,finished:false,finishTime:0,
+    skill:1.01+(12-i)*.002+(i%3-1)*.012};
  });
 }
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20'+(d.bestLap?' · лучший круг '+formatTime(d.bestLap):''):'🏆 Лучший результат: ещё не установлен'}
-function resetRace(){const p=state.player;state.time=0;state.count=3;state.position=20;state.results=[];state.laps=[];state.lastLapTime=0;state.flashUntil=0;state.flashText='';Object.assign(p,{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1,steerVelocity:0,lateralVelocity:0,color:$('carColor').value,nitro:window.TurboGarage?.stats().nitroCapacity||100});state.track=tracks[$('track').value]||tracks.coast;state.difficulty=$('difficulty').value;createOpponents();window.TurboRaceEvents?.reset(state);state.keys={};state.touch={};lastBoardAt=-10;}
+function resetRace(){const p=state.player;state.time=0;state.count=3;state.position=14;state.results=[];state.laps=[];state.lastLapTime=0;state.flashUntil=0;state.flashText='';Object.assign(p,{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1,steerVelocity:0,lateralVelocity:0,color:$('carColor').value,nitro:window.TurboGarage?.stats().nitroCapacity||100});state.track=tracks[$('track').value]||tracks.coast;state.difficulty=$('difficulty').value;createOpponents();window.TurboRaceEvents?.reset(state);state.keys={};state.touch={};lastBoardAt=-10;}
 function totalLength(){return state.track.length*lapCount}
 function update(dt){if(state.phase==='menu'||state.phase==='finish'||state.phase==='pause')return;if(state.phase==='countdown'){state.count-=dt;$('countdown').textContent=state.count>0?Math.ceil(state.count):'GO!';if(state.count<-.55){state.phase='race';$('countdown').hidden=true;$('hint').hidden=false}return}
 const p=state.player;
