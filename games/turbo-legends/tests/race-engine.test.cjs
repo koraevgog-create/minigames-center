@@ -6,7 +6,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const context={window:{}};
 vm.createContext(context);
-for(const name of ['track-model.js','race-physics.js','race-events.js']){
+for(const name of ['track-model.js','segment-road.js','race-physics.js','race-events.js']){
   vm.runInContext(fs.readFileSync(path.join(__dirname,'..',name),'utf8'),context,{filename:name});
 }
 const {TurboTrackModel:tracks,TurboRacePhysics:physics,TurboRaceEvents:events}=context.window;
@@ -76,4 +76,24 @@ test('opponents avoid perpetual lane changes while driving at nonzero speeds',()
  }
  assert.ok(r.every(o=>Number.isFinite(o.z)&&o.z>500&&o.velocity>50));
  assert.ok(r.every(o=>Math.abs(o.lane)<.8));
+});
+
+test('road segment geometry shares perspective with the player and opponents',()=>{
+ const road=context.window.TurboSegmentRoad,track={theme:'coast',length:6500};
+ const state={track,player:{z:1100,x:0,speed:180}};
+ const segments=road.sample(state);
+ assert.ok(segments.length>=120);
+ assert.ok(segments[0].width>segments[50].width);
+ assert.ok(segments.every((p,i)=>i===0||p.z>segments[i-1].z));
+ assert.ok(segments.some((p,i)=>i>0&&Math.abs(p.x-320)>10));
+ assert.ok(segments.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));
+ state.player.z=1100.5;
+ const next=road.sample(state);
+ assert.ok(Math.abs(next[45].x-segments[45].x)<15,'camera must not jump between frames');
+});
+test('authored hills vary in height and remain continuous at lap boundary',()=>{
+ const road=context.window.TurboSegmentRoad,track={theme:'alpine',length:7200};
+ const values=Array.from({length:50},(_,i)=>road.heightAt(i*track.length/50,track));
+ assert.ok(Math.max(...values)-Math.min(...values)>40);
+ assert.ok(Math.abs(road.heightAt(0,track)-road.heightAt(track.length-.001,track))<.01);
 });
