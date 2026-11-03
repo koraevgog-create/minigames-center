@@ -128,6 +128,7 @@ function playerCar(w,h){
  carShape(x,y,width,p.color,-p.drift*.14,true,!!(state.keys.brake||state.touch.brake));
 }
 function draw(){
+ if(window.TurboRetroRenderer?.render(state,canvas,ctx)){window.TurboRaceMap?.draw();return}
  const {w,h}=layout();skyline(w,h,state.track);
  const road=roadView(w,h);roadside(w,h,road);drawLandmarks(w,h,road);opponents(w,h);playerCar(w,h);drawTelemetry(w,h);window.TurboRaceMap?.draw();
  if(state.player.speed>210&&state.phase==='race'){ctx.strokeStyle='#ffffff13';ctx.lineWidth=1;for(let i=0;i<14;i++){const x=(i*167+state.time*250)%w,y=(i*109+state.time*190)%h;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(x-w/2)*.045,y+25);ctx.stroke()}}
@@ -154,7 +155,7 @@ function drawTelemetry(w,h){
 function createOpponents(){
  const multiplier=state.difficulty==='easy'?.87:state.difficulty==='hard'?1.1:1;
  state.rivals=Array.from({length:19},(_,i)=>{
- const row=9-Math.floor(i/2),column=i%2,gridZ=13+row*15;
+ const row=9-Math.floor(i/2),column=i%2,gridZ=34+row*38;
  const lane=(column?0.35:-0.35)+(i%3-1)*.018;
  return {id:i,name:names[i],color:colors[i],lane,z:gridZ,speed:(224+(i%6)*8+(i%5)*1.7)*multiplier,
  velocity:0,drive:(i*7.13)%6,baseLane:lane,desiredLane:lane,aggression:.65+(i%7)*.07,
@@ -172,8 +173,8 @@ const garage=window.TurboGarage?.stats();const forward=state.rivals.filter(o=>o.
 p.slipstream=forward.length&&p.speed>100?clamp(p.slipstream+dt*.75,0,1):clamp(p.slipstream-dt*.9,0,1);
 const max=((garage?.maxSpeed||315)+p.slipstream*14)*(.72+.28*p.health/100),boost=n&&g&&p.nitro>0&&p.speed>55;
 p.boosting=boost;
-const acceleration=g?(130+p.slipstream*12)*(garage?.acceleration||1)*(1-.38*p.speed/Math.max(250,max)):-48;
-const engineBoost=boost?165*(garage?.nitroBoost||1):0;
+const acceleration=g?(94+p.slipstream*12)*(garage?.acceleration||1)*(1-.38*p.speed/Math.max(250,max)):-48;
+const engineBoost=boost?145*(garage?.nitroBoost||1):0;
 p.speed=clamp(p.speed+(acceleration+engineBoost-(b?285:0)-p.speed*.095)*dt,0,boost?max+72:max);
 const nitroCap=garage?.nitroCapacity||100;p.nitro=clamp(p.nitro+(boost?-34/(garage?.nitroEfficiency||1):7)*dt,0,nitroCap);
 p.topSpeed=Math.max(p.topSpeed,p.speed);p.gear=clamp(Math.floor(p.speed/53)+1,1,6);
