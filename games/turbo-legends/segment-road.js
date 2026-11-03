@@ -50,7 +50,9 @@ function sample(state,w=960,h=540){
     position+=derivative;
     derivative+=(window.TurboTrackModel?.curvature(world,track)||segment.curve)*.088;
   }
-  const scale=250/(250+d);
+  // A shorter focal distance magnifies the changing distance to nearby objects.
+  // The simulation remains in metres; only projection/FOV changes.
+  const scale=115/(115+d);
   const width=w*.565*scale;
   const hill=heightAt(world,track)-baseHeight;
   const y=h*.39+(h*.66)*scale-hill*scale*1.24;
