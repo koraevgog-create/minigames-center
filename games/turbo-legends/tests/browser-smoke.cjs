@@ -13,10 +13,12 @@ const {chromium}=require('playwright');
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
   }));
-  assert.ok(before.menu);assert.match(before.version,/2\.1/);assert.equal(before.tracks,4);
+  assert.ok(before.menu);assert.match(before.version,/2\.2/);assert.equal(before.tracks,4);
   await page.click('#start');
   const begun=await page.evaluate(()=>({phase:window.TurboLegends.state.phase,grid:window.TurboLegends.state.rivals.length}));
   assert.equal(begun.phase,'countdown');assert.equal(begun.grid,19);
+  const grid=await page.evaluate(()=>({front:window.TurboLegends.state.rivals.filter(o=>o.z>0).length,back:window.TurboLegends.state.rivals.filter(o=>o.z<0).length,rank:window.TurboLegends.state.position}));
+  assert.equal(grid.front,10);assert.equal(grid.back,9);assert.equal(grid.rank,11);
   const progress=await page.evaluate(()=>{
    const g=window.TurboLegends;g.state.phase='race';g.state.keys.gas=true;
    for(let i=0;i<60*18;i++)g.update(1/60);
