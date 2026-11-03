@@ -101,7 +101,7 @@ function planAI(o,participants,track,dt){
  // CPU changes lanes gradually, and plans off a consistent snapshot each frame.
  o.lane=approach(o.lane,clamp(targetLane,-.73,.73),dt*(.19+.06*skill));
  const difference=desired-o.velocity;
- const acceleration=difference>=0?Math.min(32*skill,difference*.58):Math.max(-118,difference*2.4);
+ const acceleration=difference>=0?Math.min(26*skill,difference*.58):Math.max(-118,difference*2.4);
  o.braking=acceleration<-8;
  o.velocity=clamp(o.velocity+acceleration*dt,0,o.speed);
  o.z+=o.velocity/3.6*dt;
