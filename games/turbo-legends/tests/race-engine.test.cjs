@@ -14,7 +14,7 @@ const lengths={coast:6500,alpine:7200,desert:6800,night:6900};
 const car=()=>({z:0,x:0,speed:0,nitro:100,health:100,topSpeed:0,steerVelocity:0,lateralVelocity:0,collide:0,slipstream:0});
 const roster=()=>Array.from({length:19},(_,i)=>({
  id:i,z:65+(9-Math.floor(i/2))*42,lane:i%2?.46:-.46,baseLane:i%2?.46:-.46,
- velocity:0,speed:242+(i%6)*8+(i%5)*2,skill:.94+(i%8)*.027,
+ velocity:0,speed:228+(18-i)*2.65+(i%4)*2.8,skill:.94+(18-i)*.003+(i%4)*.012,
  passCooldown:.3+(i%5)*.35,passTarget:null,finished:false
 }));
 test('all four circuits remain finite, controllable and nonnegative for long races',()=>{
