@@ -49,23 +49,14 @@ function scenery(state,pal){
  c.fillStyle=pal.grass[0];c.fillRect(0,HZ+79,W,H-HZ-79);
 }
 function model(state){
- const t=state.track,p=state.player;
- const at=z=>window.TurboTrackModel?.curvature(z,t)||0;
- const points=[],n=Math.ceil(MAX/STEP);
- let angle=0,lateral=0;
- for(let i=0;i<=n;i++){
-  const d=i*STEP,k=at(p.z+d);const step=i?STEP:0;
-  angle+=k*step*.0022;
-  lateral+=Math.sin(angle)*step;
-  const perspective=DEPTH/(d+DEPTH);
-  const width=W*.58*perspective;
-  const height=Math.sin(mod(p.z+d,t.length)/430)*27 + Math.sin(mod(p.z+d,t.length)/160)*9;
-  const nearHeight=Math.sin(mod(p.z,t.length)/430)*27 + Math.sin(mod(p.z,t.length)/160)*9;
-  const y=HZ+(H+14-HZ)*perspective-(height-nearHeight)*perspective*.32;
-  const x=W*.5 + lateral*perspective*.72 -p.x*width*.83;
-  points.push({d,x,y,width,scale:perspective,z:p.z+d});
+ // Actual road segments projected from the camera; traffic and roadside details
+ // use the same points, so their distance scales match the road itself.
+ if(window.TurboSegmentRoad)return window.TurboSegmentRoad.sample(state,W,H);
+ const pts=[];for(let i=0;i<=MAX/STEP;i++){
+  const d=i*STEP,scale=DEPTH/(d+DEPTH),width=W*.56*scale;
+  pts.push({z:state.player.z+d,d,scale,width,x:W/2-state.player.x*width*.85,y:HZ+(H-HZ)*scale});
  }
- return points;
+ return pts;
 }
 function asphalt(state,pal,pts){
  const theme=state.track.theme;
