@@ -48,11 +48,11 @@ function sample(state,w=960,h=540){
   const segment=data.segments[Math.floor((((world%track.length)+track.length)%track.length)/SEGMENT)%data.count];
   if(i>0){
     position+=derivative;
-    derivative+=segment.curve*.088;
+    derivative+=(window.TurboTrackModel?.curvature(world,track)||segment.curve)*.088;
   }
   const scale=250/(250+d);
   const width=w*.565*scale;
-  const hill=segment.height-baseHeight;
+  const hill=heightAt(world,track)-baseHeight;
   const y=h*.39+(h*.66)*scale-hill*scale*1.24;
   const x=w*.5-position*scale*16.0-p.x*width*.85;
   points.push({z:world,d,x,y,width,scale,curve:segment.curve,height:segment.height});
