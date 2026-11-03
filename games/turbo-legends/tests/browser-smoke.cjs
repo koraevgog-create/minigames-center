@@ -8,7 +8,7 @@ const {chromium}=require('playwright');
  try{
   const response=await page.goto('http://127.0.0.1:8765/games/turbo-legends/',{waitUntil:'networkidle'});
   assert.equal(response.status(),200);
-  await page.waitForFunction(()=>!!(window.TurboLegends&&window.TurboRacePhysics&&window.TurboRetroRenderer&&window.TurboRaceEvents));
+  await page.waitForFunction(()=>!!(window.TurboLegends&&window.TurboRacePhysics&&window.TurboRetroRenderer&&window.TurboRaceEvents&&window.TurboSegmentRoad));
   const before=await page.evaluate(()=>({
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
