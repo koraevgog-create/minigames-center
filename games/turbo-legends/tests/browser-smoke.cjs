@@ -31,6 +31,23 @@ const {chromium}=require('playwright');
   assert.ok(progress.position>=1&&progress.position<=20);
   assert.ok(Math.abs(progress.x)<=1.5);
   assert.equal(progress.pickups,21);
+  // Real-time simulation must keep pace with wall-clock time at browser frame rate.
+  const clock=await page.evaluate(async()=>{
+   const g=window.TurboLegends;
+   g.state.phase='race';g.state.keys.gas=true;
+   const before=g.state.time,start=performance.now();
+   await new Promise(resolve=>setTimeout(resolve,1800));
+   return {elapsed:(performance.now()-start)/1000,simulated:g.state.time-before,meters:g.state.player.z};
+  });
+  assert.ok(clock.simulated>clock.elapsed*.79,'physics must not run in slow motion');
+  assert.ok(clock.simulated<clock.elapsed*1.25,'physics clock must not run too fast');
+  const perspective=await page.evaluate(()=>{
+   const g=window.TurboLegends;
+   const points=window.TurboSegmentRoad.sample(g.state);
+   return {near:points[0].scale,distance120:points[5].scale,far:points[55].scale};
+  });
+  assert.ok(perspective.near>perspective.distance120*1.8,'nearby objects must grow perceptibly');
+  assert.ok(perspective.distance120>perspective.far*4,'depth must be legible');
   await page.evaluate(()=>{
    const g=window.TurboLegends;
    g.state.player.z=g.state.track.length*3-0.5;
