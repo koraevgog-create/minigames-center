@@ -60,3 +60,15 @@
 /* v1.0 — expanded finishing standings and compact race telemetry */
 .race-summary-v1{padding:12px 14px;margin:8px 0 14px;border:1px solid rgba(125,207,235,.26);border-radius:12px;background:rgba(20,47,66,.72);color:#d9f6ff;font-size:13px;line-height:1.6;font-weight:700}
 #results{max-height:min(42vh,410px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#53718e transparent}
+
+/* v1.2 — classic racing HUD, crisp virtual-resolution canvas */
+#race{image-rendering:pixelated;image-rendering:crisp-edges}
+.hud .chip,.hud .speed{border-radius:5px;border:2px solid #d2e3e5a6;background:#11233de8;box-shadow:4px 4px 0 #0713257a;backdrop-filter:none}
+.hud .chip>small{color:#ffdb75;letter-spacing:.12em}
+.hud .chip>b{font-variant-numeric:tabular-nums;font-style:normal;text-shadow:2px 3px 0 #071322}
+.hud .speed strong{font-style:normal;font-variant-numeric:tabular-nums;text-shadow:3px 4px 0 #071322}
+.race-progress{border:1px solid #ffffff8a;box-shadow:2px 3px 0 #071325ad}
+.menu-card .eyebrow{color:#ffe3a0}
+.race-leaderboard,.race-map{backdrop-filter:none;border-color:#b3d4e58c}
+@media(hover:hover) and (pointer:fine){.touch-controls{display:none!important}}
+@media(max-width:660px){.hud .chip,.hud .speed{border-width:1px;box-shadow:2px 2px 0 #0713257a}}
