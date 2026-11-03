@@ -166,61 +166,42 @@ function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord'
 function resetRace(){const p=state.player;state.time=0;state.count=3;state.position=20;state.results=[];state.laps=[];state.lastLapTime=0;state.flashUntil=0;state.flashText='';Object.assign(p,{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1,steerVelocity:0,lateralVelocity:0,color:$('carColor').value,nitro:window.TurboGarage?.stats().nitroCapacity||100});state.track=tracks[$('track').value]||tracks.coast;state.difficulty=$('difficulty').value;createOpponents();state.keys={};state.touch={};lastBoardAt=-10;}
 function totalLength(){return state.track.length*lapCount}
 function update(dt){if(state.phase==='menu'||state.phase==='finish'||state.phase==='pause')return;if(state.phase==='countdown'){state.count-=dt;$('countdown').textContent=state.count>0?Math.ceil(state.count):'GO!';if(state.count<-.55){state.phase='race';$('countdown').hidden=true;$('hint').hidden=false}return}
-const p=state.player,g=state.keys.gas||state.touch.gas,b=state.keys.brake||state.touch.brake,n=state.keys.nitro||state.touch.nitro;
-state.time+=dt;p.collide=Math.max(0,p.collide-dt);
-// Manual throttle, noticeable coasting, progressive braking, nitro only while accelerating.
-const garage=window.TurboGarage?.stats();const forward=state.rivals.filter(o=>o.z>p.z&&o.z-p.z<150&&Math.abs(o.lane-p.x)<.26);
-p.slipstream=forward.length&&p.speed>100?clamp(p.slipstream+dt*.75,0,1):clamp(p.slipstream-dt*.9,0,1);
-const max=((garage?.maxSpeed||315)+p.slipstream*14)*(.72+.28*p.health/100),boost=n&&g&&p.nitro>0&&p.speed>55;
-p.boosting=boost;
-const acceleration=g?(94+p.slipstream*12)*(garage?.acceleration||1)*(1-.38*p.speed/Math.max(250,max)):-48;
-const engineBoost=boost?145*(garage?.nitroBoost||1):0;
-p.speed=clamp(p.speed+(acceleration+engineBoost-(b?285:0)-p.speed*.095)*dt,0,boost?max+72:max);
-const nitroCap=garage?.nitroCapacity||100;p.nitro=clamp(p.nitro+(boost?-34/(garage?.nitroEfficiency||1):7)*dt,0,nitroCap);
-p.topSpeed=Math.max(p.topSpeed,p.speed);p.gear=clamp(Math.floor(p.speed/53)+1,1,6);
-const steer=(state.keys.right||state.touch.right?1:0)-(state.keys.left||state.touch.left?1:0);
-const bend=curvature(p.z),speedRatio=clamp(p.speed/220,0,1.5),handling=garage?.handling||1;
-p.steerVelocity=lerp(p.steerVelocity,steer,clamp(dt*(p.offRoad?3:5.2)*handling,0,1));
-const roadPull=bend*Math.pow(speedRatio,1.65)*.38/handling;
-const effectiveSteer=p.steerVelocity*(.52+.57*speedRatio)*handling;
-const desiredLateral=(effectiveSteer-roadPull)*(p.offRoad?.75:1);
-p.lateralVelocity=lerp(p.lateralVelocity,desiredLateral,clamp(dt*(p.offRoad?2.3:3.5),0,1));
-p.x=clamp(p.x+p.lateralVelocity*dt*1.48,-2.05,2.05);
-p.drift=p.lateralVelocity;
-p.offRoad=Math.abs(p.x)>1.07;
-if(p.offRoad){p.speed=Math.max(0,p.speed-(100+p.speed*.16)*dt);p.health=Math.max(25,p.health-.75*dt)}
-const future=window.TurboTrackModel?.upcoming(p.z,state.track,205)||0;
-if(Math.abs(future)>1.25&&p.speed>225&&!b){p.speed=Math.max(0,p.speed-(Math.abs(future)-1.25)*29*dt)}
-
-p.z+=p.speed/3.6*dt;
-for(const o of state.rivals){
- if(o.finished)continue;
- const nextCurve=Math.abs(window.TurboTrackModel?.upcoming(o.z,state.track,200)||curvature(o.z));
- const cornerLimit=nextCurve>1.4?153:nextCurve>.85?193:320;
- const desired=Math.min(o.speed,cornerLimit*(.92+o.skill*.09));
- const throttle=desired>o.velocity?96*o.skill:0;
- const braking=desired<o.velocity?Math.min(160,(o.velocity-desired)*3.8):0;
- o.braking=braking>8;
- o.velocity=clamp(o.velocity+(throttle-braking-o.velocity*.035)*dt,0,o.speed);
- if(o.launchDelay>0){o.launchDelay-=dt;o.velocity=Math.min(o.velocity,Math.max(0,(.25-o.launchDelay)*130))}
- const nearby=state.rivals.filter(v=>v!==o&&!v.finished&&v.z>o.z&&v.z-o.z<68&&Math.abs(v.lane-o.lane)<.31).sort((a,b)=>a.z-b.z)[0];
- const playerAhead=p.z>o.z&&p.z-o.z<58&&Math.abs(p.x-o.lane)<.3;
- const obstacle=nearby||(playerAhead?{z:p.z,lane:p.x,velocity:p.speed}:null);
- let targetLane=o.baseLane+Math.sin(state.time*.13+o.drive)*.035;
- if(obstacle){
-  const gap=obstacle.z-o.z,passing=(o.id%2?1:-1);
-  const room=clamp(obstacle.lane+passing*.56,-.78,.78);
-  targetLane=room;
-  if(Math.abs(o.lane-obstacle.lane)<.27&&gap<26)o.velocity=Math.min(o.velocity,Math.max(0,(obstacle.velocity||0)-3));
+const p=state.player;
+const inputs={
+ gas:state.keys.gas||state.touch.gas,
+ brake:state.keys.brake||state.touch.brake,
+ nitro:state.keys.nitro||state.touch.nitro,
+ left:state.keys.left||state.touch.left,
+ right:state.keys.right||state.touch.right
+};
+state.time+=dt;
+p.collide=Math.max(0,p.collide-dt);
+const garage=window.TurboGarage?.stats();
+const physics=window.TurboRacePhysics;
+if(physics){
+ physics.vehicle(p,inputs,state.track,garage,dt);
+ const participants=[...state.rivals,{z:p.z,lane:p.x,velocity:p.speed,finished:false,isPlayer:true}];
+ // Re-evaluate every car against the same race snapshot rather than a changing order.
+ const plans=state.rivals.map(rival=>({...rival}));
+ for(let i=0;i<state.rivals.length;i++){
+  const opponent=state.rivals[i];
+  if(opponent.finished)continue;
+  physics.planAI(opponent,plans.concat(participants[participants.length-1]),state.track,dt,state.time);
+  if(opponent.z>=totalLength()){
+   opponent.z=totalLength();opponent.finished=true;opponent.finishTime=state.time;
+  }
  }
- const bend=curvature(o.z);targetLane-=clamp(bend*.11,-.19,.19);
- o.lane=lerp(o.lane,clamp(targetLane,-.82,.82),clamp(dt*(obstacle?1.25:.55)*o.aggression,0,1));
- o.z+=o.velocity/3.6*dt;
- if(o.z>=totalLength()){o.z=totalLength();o.finished=true;o.finishTime=state.time}
+ const collision=physics.resolveInteractions(state,dt);
+ if(collision){beep(120,.12);announce('💥 СТОЛКНОВЕНИЕ · -'+Math.round(Math.max(0,100-p.health))+'% состояния',1.5)}
+}else{
+ // If the physics module cannot be loaded, the game remains steerable.
+ const steer=Number(!!inputs.right)-Number(!!inputs.left);
+ p.speed=clamp(p.speed+(inputs.gas?70:-35)*dt-(inputs.brake?250*dt:0),0,270);
+ p.x=clamp(p.x+steer*dt*1.1,-2,2);
+ p.z+=p.speed/3.6*dt;
+ for(const opponent of state.rivals)opponent.z+=opponent.velocity/3.6*dt;
 }
-
-if(!p.collide)for(const o of state.rivals){const delta=o.z-p.z;if(Math.abs(delta)<10&&Math.abs(o.lane-p.x)<.21){p.speed*=.83;p.health=Math.max(20,p.health-5);p.collide=1.05;o.lane=clamp(o.lane+(o.lane>p.x?.13:-.13),-.86,.86);beep(115,.11);break}}
-const oldRank=state.position,oldLap=p.lap;state.position=1+state.rivals.filter(o=>o.z>p.z).length;p.lap=Math.min(lapCount,Math.floor(p.z/state.track.length)+1);
+const oldRank=state.position,oldLap=p.lap;state.position=1+state.rivals.filter(o=>o.z>p.z+.01||(Math.abs(o.z-p.z)<=.01&&o.finished)).length;p.lap=Math.min(lapCount,Math.floor(p.z/state.track.length)+1);
 if(p.lap>oldLap){const split=state.time-state.lastLapTime;state.laps.push(split);state.lastLapTime=state.time;announce('🏁 КРУГ '+oldLap+' · '+formatTime(split),3.4);renderSplits();}
 else if(state.position<oldRank&&state.time>4)announce('⚡ ОБГОН! '+state.position+' / 20',1.75);
 else if(state.position>oldRank&&state.time>4)announce('↘ ПОТЕРЯ ПОЗИЦИИ · '+state.position+' / 20',1.6);
