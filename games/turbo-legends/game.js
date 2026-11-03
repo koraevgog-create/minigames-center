@@ -157,9 +157,9 @@ function createOpponents(){
  state.rivals=Array.from({length:19},(_,i)=>{
  const row=9-Math.floor(i/2),column=i%2,gridZ=65+row*42;
  const lane=column?.46:-.46;
- return {id:i,name:names[i],color:colors[i],lane,z:gridZ,speed:(242+(i%6)*8+(i%5)*2)*multiplier,
+ return {id:i,name:names[i],color:colors[i],lane,z:gridZ,speed:(228+(18-i)*2.65+(i%4)*2.8)*multiplier,
  velocity:0,drive:(i*7.13)%6,baseLane:lane,passTarget:null,passCooldown:.3+(i%5)*.35,
- braking:false,finished:false,finishTime:0,launchDelay:.08+(i%5)*.045,skill:.94+(i%8)*.027};
+ braking:false,finished:false,finishTime:0,launchDelay:.08+(i%5)*.045,skill:.94+(18-i)*.003+(i%4)*.012};
  });
 }
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20'+(d.bestLap?' · лучший круг '+formatTime(d.bestLap):''):'🏆 Лучший результат: ещё не установлен'}
