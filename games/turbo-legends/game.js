@@ -222,7 +222,19 @@ for(const b of document.querySelectorAll('[data-control]')){const name=b.dataset
 $('track').addEventListener('change',showRecord);showRecord();$('start').onclick=start;$('again').onclick=start;$('toMenu').onclick=toMenu;$('pauseBtn').onclick=pause;$('resume').onclick=pause;
 let audioContext=null;function beep(freq=300,duration=.05){if(!state.audio)return;try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();const osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sawtooth';osc.frequency.value=freq;gain.gain.setValueAtTime(.03,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);osc.connect(gain).connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+duration)}catch{}}
 $('audio').onclick=()=>{state.audio=!state.audio;$('audio').textContent=state.audio?'🔊 Звук':'🔇 Звук';$('audio').setAttribute('aria-pressed',String(state.audio));beep(430,.08)};
-function frame(now){const dt=clamp((now-(state.last||now))/1000,0,.045);state.last=now;update(dt);draw();requestAnimationFrame(frame)}
+let accumulator=0;
+function frame(now){
+ const elapsed=clamp((now-(state.last||now))/1000,0,.12);
+ state.last=now;
+ accumulator+=elapsed;
+ const fixedStep=1/60;
+ let ticks=0;
+ while(accumulator>=fixedStep&&ticks<7){
+  update(fixedStep);accumulator-=fixedStep;ticks++;
+ }
+ if(ticks===7)accumulator=0;
+ draw();requestAnimationFrame(frame);
+}
 resetRace();requestAnimationFrame(frame);
 window.TurboLegends={state,start,update,draw,pause,toMenu,tracks,formatTime};
 })();
