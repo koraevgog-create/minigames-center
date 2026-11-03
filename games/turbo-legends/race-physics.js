@@ -10,7 +10,8 @@ function vehicle(p,input,track,garage,dt){
  dt=clamp(dt,0,1/30);
  const gas=!!input.gas,brake=!!input.brake;
  const steer=Number(!!input.right)-Number(!!input.left);
- const grip=clamp(garage?.handling||1,.78,1.65);
+ const weatherGrip=(track.theme==='alpine'||track.theme==='night')?.93:1;
+ const grip=clamp((garage?.handling||1)*weatherGrip,.78,1.65);
  const accel=clamp(garage?.acceleration||1,.8,1.7);
  const capacity=garage?.nitroCapacity||100;
  const baseMax=garage?.maxSpeed||300;
@@ -21,7 +22,7 @@ function vehicle(p,input,track,garage,dt){
  const nitroPower=boost?145*(garage?.nitroBoost||1):0;
  const braking=brake?265:0;
  p.speed=clamp(p.speed+(engine+nitroPower-resistance-braking)*dt,0,boost?top+78:top);
- p.nitro=clamp(p.nitro+(boost?-35/(garage?.nitroEfficiency||1):6.4)*dt,0,capacity);
+ p.nitro=clamp(p.nitro+(boost?-9.5/(garage?.nitroEfficiency||1):0)*dt,0,capacity);
  p.boosting=boost;p.gear=clamp(1+Math.floor(p.speed/54),1,6);
  p.topSpeed=Math.max(p.topSpeed,p.speed);
  // Smooth but responsive steering. At normal speed the road cannot throw you off.
