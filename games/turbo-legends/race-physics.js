@@ -1,120 +1,131 @@
-/* Turbo Legends 2.0 - deterministic arcade race simulation, no external dependencies.
-   Distances: metres. Speed: km/h. Steering coordinate: +/-1 is one road half-width.
-   The road renderer owns camera motion; physics owns only road-relative position. */
+/* Turbo Legends 2.2 — skill-based arcade race dynamics.
+ * Road-relative coordinates (x = +/-1 track edge), speed km/h, z metres.
+ * Shared corner geometry drives steering and CPU speed planning. */
 (()=>{'use strict';
-const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const approach=(a,b,step)=>a<b?Math.min(b,a+step):Math.max(b,a-step);
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+const approach=(from,to,step)=>from<to?Math.min(to,from+step):Math.max(to,from-step);
 const model=()=>window.TurboTrackModel;
-const curve=(z,t)=>model()?.curvature(z,t)||0;
+const corner=(z,track)=>model()?.curvature(z,track)||0;
+const lookAhead=(z,track,range)=>{
+ let peak=0;
+ for(let d=0;d<=range;d+=25){const k=corner(z+d,track);if(Math.abs(k)>Math.abs(peak))peak=k}
+ return peak;
+};
+function cornerLimit(z,track,grip=1){
+ const severity=Math.abs(lookAhead(z+35,track,115));
+ return clamp((286-44*severity)*Math.sqrt(grip),163,306);
+}
 function vehicle(p,input,track,garage,dt){
  dt=clamp(dt,0,1/30);
  const gas=!!input.gas,brake=!!input.brake;
  const steer=Number(!!input.right)-Number(!!input.left);
- const weatherGrip=(track.theme==='alpine'||track.theme==='night')?.93:1;
- const grip=clamp((garage?.handling||1)*weatherGrip,.78,1.65);
- const accel=clamp(garage?.acceleration||1,.8,1.7);
+ const weather=(track.theme==='alpine'||track.theme==='night')?.94:1;
+ const grip=clamp((garage?.handling||1)*weather,.8,1.65);
+ const acc=clamp(garage?.acceleration||1,.8,1.8);
+ const max=(garage?.maxSpeed||300)*(.86+.14*p.health/100)+(p.slipstream||0)*8;
+ const activeNitro=!!input.nitro&&gas&&!brake&&p.speed>55&&p.nitro>.1;
+ // Acceleration builds over time; a high top speed does not mean instant 300 km/h.
+ const engine=gas?28*acc*(1-.22*Math.pow(Math.min(p.speed/max,1),2)):0;
+ const drag=2.5+p.speed*.038+.00011*p.speed*p.speed;
+ const boost=activeNitro?64*(garage?.nitroBoost||1):0;
+ p.speed=clamp(p.speed+(engine+boost-drag-(brake?180:0))*dt,0,activeNitro?max+65:max);
  const capacity=garage?.nitroCapacity||100;
- const baseMax=garage?.maxSpeed||300;
- const top=baseMax*(.87+.13*p.health/100)+(p.slipstream||0)*11;
- const boost=!!input.nitro&&gas&&!brake&&p.nitro>1&&p.speed>42;
- const resistance=9+p.speed*.038+.00024*p.speed*p.speed;
- const engine=gas?(122*accel+9*(p.slipstream||0))*(1-.65*Math.pow(Math.min(1,p.speed/top),1.25)):0;
- const nitroPower=boost?145*(garage?.nitroBoost||1):0;
- const braking=brake?265:0;
- p.speed=clamp(p.speed+(engine+nitroPower-resistance-braking)*dt,0,boost?top+78:top);
- p.nitro=clamp(p.nitro+(boost?-9.5/(garage?.nitroEfficiency||1):0)*dt,0,capacity);
- p.boosting=boost;p.gear=clamp(1+Math.floor(p.speed/54),1,6);
+ p.nitro=clamp(p.nitro-(activeNitro?11/(garage?.nitroEfficiency||1):0)*dt,0,capacity);
+ p.boosting=activeNitro;
  p.topSpeed=Math.max(p.topSpeed,p.speed);
- // Smooth but responsive steering. At normal speed the road cannot throw you off.
- p.steerVelocity=approach(p.steerVelocity||0,steer,dt*4.8*grip);
- const speedFactor=clamp(p.speed/190,.22,1.6);
- const currentCurve=curve(p.z,track);
- const overspeed=clamp((p.speed-175)/155,0,1.25);
- const bendForce=currentCurve*.11*overspeed*overspeed/(grip*.9);
- // Slight natural grip recovery at road edge; no arbitrary forced collision steering.
- const assist=(Math.abs(p.x)>1.02&&steer===0)?-Math.sign(p.x)*.29:0;
- const desired=p.steerVelocity*(.42+.55*speedFactor)*grip-bendForce+assist;
- p.lateralVelocity=approach(p.lateralVelocity||0,desired,dt*(3.9+grip));
- p.x=clamp(p.x+p.lateralVelocity*dt*1.35,-1.43,1.43);
+ p.gear=clamp(1+Math.floor(p.speed/51),1,6);
+ // Curves exert sideways force only when moving quickly. Player input always
+ // has enough authority to recover, but a fast uncorrected bend costs distance.
+ const localCurve=corner(p.z,track),safeSpeed=cornerLimit(p.z,track,grip);
+ const speedFactor=clamp(p.speed/235,0,1.40);
+ const over=clamp((p.speed-safeSpeed)/85,0,1.7);
+ const turnPush=localCurve*(.035+.11*speedFactor*speedFactor+.12*over);
+ p.steerVelocity=approach(p.steerVelocity||0,steer,dt*(4.4+grip));
+ const steeringPower=(.30+.52*speedFactor)*grip*(1-.12*over);
+ const target=p.steerVelocity*steeringPower-turnPush;
+ p.lateralVelocity=approach(p.lateralVelocity||0,target,dt*(2.6+grip));
+ p.x=clamp(p.x+p.lateralVelocity*dt*1.34,-1.55,1.55);
  p.drift=p.lateralVelocity;
- p.offRoad=Math.abs(p.x)>1.06;
+ p.offRoad=Math.abs(p.x)>1.04;
  if(p.offRoad){
-  const outside=clamp((Math.abs(p.x)-1.06)/.37,0,1);
-  p.speed=Math.max(0,p.speed-(40+75*outside)*dt);
-  if(p.speed>65)p.health=clamp(p.health-(.08+.36*outside)*dt,20,100);
+  const outside=clamp((Math.abs(p.x)-1.04)/.51,0,1);
+  p.speed=Math.max(0,p.speed-(36+95*outside)*dt);
+  p.health=Math.max(20,p.health-(.12+.38*outside)*dt*(p.speed>55?1:0));
  }
  p.z+=p.speed/3.6*dt;
- return {curve:currentCurve,speed:p.speed};
+ return {safeSpeed,curve:localCurve,overSpeed:over};
 }
-const LANE_OPTIONS=[-.70,-.37,0,.37,.70];
-function canUseLane(driver,near,lane){
- return near.every(v=>{
+const LANES=[-.68,-.34,0,.34,.68];
+function laneClear(driver,participants,lane){
+ return participants.every(v=>{
   if(v.id===driver.id||v.finished)return true;
-  const relative=v.z-driver.z;
-  return relative < -16||relative>21||Math.abs(v.lane-lane)>.28;
+  const gap=v.z-driver.z;
+  return gap < -20||gap>32||Math.abs(v.lane-lane)>.30;
  });
 }
 function planAI(o,participants,track,dt){
  if(o.finished)return;
  dt=clamp(dt,0,1/30);
- const skill=clamp(o.skill||1,.85,1.16);
- const curveAhead=Math.abs(model()?.upcoming(o.z+55,track,190)||0);
- const cornerSpeed=clamp(297-curveAhead*45,168,300);
- let targetSpeed=Math.min(o.speed,cornerSpeed*skill);
- const sorted=participants.filter(v=>v.id!==o.id&&!v.finished&&v.z>o.z&&v.z-o.z<90&&Math.abs(v.lane-o.lane)<.26).sort((a,b)=>a.z-b.z);
- const ahead=sorted[0];
+ const skill=clamp(o.skill||1,.82,1.18);
+ const range=clamp(o.velocity/3.6*2.1,85,210);
+ const bend=Math.abs(lookAhead(o.z+40,track,range));
+ const safe=clamp((289-42*bend)*(.92+.09*skill),155,304);
+ let desired=Math.min(o.speed,safe);
+ const traffic=participants.filter(v=>v.id!==o.id&&!v.finished&&v.z>o.z&&v.z-o.z<95&&Math.abs(v.lane-o.lane)<.27).sort((a,b)=>a.z-b.z);
+ const ahead=traffic[0];
  o.passCooldown=Math.max(0,(o.passCooldown||0)-dt);
  let targetLane=o.baseLane;
+ if(o.passTarget!=null)targetLane=o.passTarget;
  if(ahead){
   const gap=ahead.z-o.z;
-  if(gap<40&&o.passCooldown<=0){
-   const alternatives=LANE_OPTIONS.filter(l=>Math.abs(l-o.lane)>.23&&canUseLane(o,participants,l));
-   alternatives.sort((a,b)=>Math.abs(a-o.lane)-Math.abs(b-o.lane));
-   if(alternatives.length){o.passTarget=alternatives[0];o.passCooldown=2.9}
+  if(gap<50&&o.passTarget==null&&o.passCooldown<=0){
+   const options=LANES.filter(l=>Math.abs(l-o.lane)>.25&&laneClear(o,participants,l));
+   options.sort((a,b)=>Math.abs(a-o.lane)-Math.abs(b-o.lane));
+   if(options.length){o.passTarget=options[0];o.passCooldown=3.5;targetLane=o.passTarget;}
   }
-  const overlap=Math.abs(ahead.lane-o.lane)<.27;
-  if(overlap&&gap<clamp(13+o.velocity*.085,13,36))
-   targetSpeed=Math.min(targetSpeed,Math.max(55,(ahead.velocity||0)+(gap-12)*1.1));
+  if(Math.abs(o.lane-ahead.lane)<.29&&gap<36){
+    desired=Math.min(desired,Math.max(40,(ahead.velocity||0)+(gap-19)*.85));
+  }
  }
  if(o.passTarget!=null){
-  targetLane=o.passTarget;
-  const unsafe=!canUseLane(o,participants,targetLane);
-  if(unsafe){o.passTarget=null;o.passCooldown=1.8;targetLane=o.baseLane}
-  else if(!ahead&&o.passCooldown<.9){o.passTarget=null;targetLane=o.baseLane}
+  if(!laneClear(o,participants,o.passTarget)){
+   o.passTarget=null;o.passCooldown=2;targetLane=o.baseLane;
+  }else if(!ahead&&o.passCooldown<1.2){
+   o.passTarget=null;targetLane=o.baseLane;
+  }
  }
- // AI follows a trajectory; it never teleports between lanes.
- o.lane=approach(o.lane,clamp(targetLane,-.74,.74),dt*(.21+.07*skill));
- const diff=targetSpeed-o.velocity;
- const accel=diff>0?Math.min(80*skill,diff*1.9):Math.max(-165,diff*2.5);
- o.braking=accel<-18;
- o.velocity=clamp(o.velocity+accel*dt,0,o.speed);
+ // CPU changes lanes gradually, and plans off a consistent snapshot each frame.
+ o.lane=approach(o.lane,clamp(targetLane,-.73,.73),dt*(.19+.06*skill));
+ const difference=desired-o.velocity;
+ const acceleration=difference>=0?Math.min(27*skill,difference*.52):Math.max(-118,difference*2.4);
+ o.braking=acceleration<-8;
+ o.velocity=clamp(o.velocity+acceleration*dt,0,o.speed);
  o.z+=o.velocity/3.6*dt;
 }
 function resolveInteractions(state){
  const p=state.player;
  let hit=null;
  for(const o of state.rivals){
-  if(o.finished||p.collide>0||Math.abs(o.z-p.z)>5.2||Math.abs(o.lane-p.x)>.24)continue;
+  if(o.finished||p.collide>0||Math.abs(o.z-p.z)>5.3||Math.abs(o.lane-p.x)>.24)continue;
   const relative=Math.abs(p.speed-o.velocity);
-  const loss=clamp(relative*.14+3,3,23);
-  p.speed=Math.max(0,p.speed-loss);o.velocity=Math.max(0,o.velocity-loss*.20);
-  p.health=clamp(p.health-(1.2+relative*.028),20,100);
-  p.collide=.78;hit={other:o,impact:relative};
+  const loss=clamp(2+relative*.12,3,21);
+  p.speed=Math.max(0,p.speed-loss);
+  o.velocity=Math.max(0,o.velocity-loss*.19);
+  p.health=Math.max(20,p.health-(.9+relative*.022));
+  p.collide=.70;hit={impact:relative,other:o};
   break;
  }
- // Resolve traffic within nearby road strips, preserving order without lane kicks.
- const cars=state.rivals.filter(v=>!v.finished).sort((a,b)=>b.z-a.z);
- for(let i=0;i<cars.length;i++){
-  const lead=cars[i];
-  for(let j=i+1;j<cars.length;j++){
-   const follow=cars[j],gap=lead.z-follow.z;
-   if(gap>9)break;
-   if(Math.abs(lead.lane-follow.lane)>.22)continue;
-   const separation=6.5;
-   if(gap<separation){follow.z=lead.z-separation;follow.velocity=Math.min(follow.velocity,lead.velocity)}
+ const sorted=state.rivals.filter(o=>!o.finished).sort((a,b)=>b.z-a.z);
+ for(let i=0;i<sorted.length;i++){
+  const lead=sorted[i];
+  for(let j=i+1;j<sorted.length;j++){
+   const behind=sorted[j],gap=lead.z-behind.z;
+   if(gap>8)break;
+   if(Math.abs(lead.lane-behind.lane)>.22)continue;
+   if(gap<6){behind.z=lead.z-6;behind.velocity=Math.min(behind.velocity,lead.velocity)}
   }
  }
  return hit;
 }
-window.TurboRacePhysics={vehicle,planAI,resolveInteractions};
+window.TurboRacePhysics={vehicle,planAI,resolveInteractions,cornerLimit};
 })();
