@@ -13,7 +13,7 @@ const lookAhead=(z,track,range)=>{
 };
 function cornerLimit(z,track,grip=1){
  const severity=Math.abs(lookAhead(z+35,track,115));
- return clamp((286-44*severity)*Math.sqrt(grip),163,306);
+ return clamp((295-38*severity)*Math.sqrt(grip),190,306);
 }
 function vehicle(p,input,track,garage,dt){
  dt=clamp(dt,0,1/30);
@@ -39,19 +39,23 @@ function vehicle(p,input,track,garage,dt){
  const localCurve=corner(p.z,track),safeSpeed=cornerLimit(p.z,track,grip);
  const speedFactor=clamp(p.speed/235,0,1.40);
  const over=clamp((p.speed-safeSpeed)/85,0,1.7);
- const turnPush=localCurve*(.035+.11*speedFactor*speedFactor+.12*over);
+ const turnPush=localCurve*(.030+.10*speedFactor*speedFactor+.12*over);
  p.steerVelocity=approach(p.steerVelocity||0,steer,dt*(4.4+grip));
  const steeringPower=(.30+.52*speedFactor)*grip*(1-.12*over);
- const target=p.steerVelocity*steeringPower-turnPush;
+ const rescue=(p.offRoad&&steer===0&&p.speed<105)?-Math.sign(p.x)*.48:0;
+ const target=p.steerVelocity*steeringPower-turnPush+rescue;
  p.lateralVelocity=approach(p.lateralVelocity||0,target,dt*(2.6+grip));
  p.x=clamp(p.x+p.lateralVelocity*dt*1.34,-1.55,1.55);
  p.drift=p.lateralVelocity;
  p.offRoad=Math.abs(p.x)>1.04;
  if(p.offRoad){
   const outside=clamp((Math.abs(p.x)-1.04)/.51,0,1);
-  p.speed=Math.max(0,p.speed-(36+95*outside)*dt);
+  p.speed=Math.max(0,p.speed-Math.min(p.speed*.27,36+95*outside)*dt);
   p.health=Math.max(20,p.health-(.12+.38*outside)*dt*(p.speed>55?1:0));
  }
+ // Fast corners scrub speed even if the player holds full throttle.
+ const scrub=Math.abs(localCurve)>1.0?Math.max(0,over-.10)*Math.abs(localCurve)*16:0;
+ p.speed=Math.max(0,p.speed-scrub*dt);
  p.z+=p.speed/3.6*dt;
  return {safeSpeed,curve:localCurve,overSpeed:over};
 }
@@ -69,7 +73,7 @@ function planAI(o,participants,track,dt){
  const skill=clamp(o.skill||1,.82,1.18);
  const range=clamp(o.velocity/3.6*2.1,85,210);
  const bend=Math.abs(lookAhead(o.z+40,track,range));
- const safe=clamp((289-42*bend)*(.92+.09*skill),155,304);
+ const safe=clamp((301-33*bend)*(.93+.08*skill),205,310);
  let desired=Math.min(o.speed,safe);
  const traffic=participants.filter(v=>v.id!==o.id&&!v.finished&&v.z>o.z&&v.z-o.z<95&&Math.abs(v.lane-o.lane)<.27).sort((a,b)=>a.z-b.z);
  const ahead=traffic[0];
@@ -97,7 +101,7 @@ function planAI(o,participants,track,dt){
  // CPU changes lanes gradually, and plans off a consistent snapshot each frame.
  o.lane=approach(o.lane,clamp(targetLane,-.73,.73),dt*(.19+.06*skill));
  const difference=desired-o.velocity;
- const acceleration=difference>=0?Math.min(27*skill,difference*.52):Math.max(-118,difference*2.4);
+ const acceleration=difference>=0?Math.min(32*skill,difference*.58):Math.max(-118,difference*2.4);
  o.braking=acceleration<-8;
  o.velocity=clamp(o.velocity+acceleration*dt,0,o.speed);
  o.z+=o.velocity/3.6*dt;
