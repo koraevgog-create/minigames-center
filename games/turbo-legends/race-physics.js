@@ -15,10 +15,10 @@ function vehicle(p,input,track,garage,dt){
  const accel=clamp(garage?.acceleration||1,.8,1.7);
  const capacity=garage?.nitroCapacity||100;
  const baseMax=garage?.maxSpeed||300;
- const top=baseMax*(.87+.13*p.health/100);
+ const top=baseMax*(.87+.13*p.health/100)+(p.slipstream||0)*11;
  const boost=!!input.nitro&&gas&&!brake&&p.nitro>1&&p.speed>42;
  const resistance=9+p.speed*.038+.00024*p.speed*p.speed;
- const engine=gas?122*accel*(1-.65*Math.pow(Math.min(1,p.speed/top),1.25)):0;
+ const engine=gas?(122*accel+9*(p.slipstream||0))*(1-.65*Math.pow(Math.min(1,p.speed/top),1.25)):0;
  const nitroPower=boost?145*(garage?.nitroBoost||1):0;
  const braking=brake?265:0;
  p.speed=clamp(p.speed+(engine+nitroPower-resistance-braking)*dt,0,boost?top+78:top);
