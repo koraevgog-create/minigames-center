@@ -5,7 +5,7 @@ const canvas=document.getElementById('raceMap');if(!canvas)return;
 const ctx=canvas.getContext('2d'),box=document.getElementById('mapContainer'),label=document.getElementById('mapTrackLabel'),toggle=document.getElementById('mapToggle');
 const W=230,H=177;canvas.width=W*2;canvas.height=H*2;ctx.scale(2,2);
 let circuit=null,samples=[],last=-1;
-const turns=(z,t)=>{const p=((z%t.length)+t.length)%t.length;return (Math.sin(p/760)+.58*Math.sin(p/370+1.1)+.26*Math.sin(p/173+.6))*t.twist};
+const turns=(z,t)=>window.TurboTrackModel?.curvature(z,t)||0;
 function build(t){const steps=180;const a=[];let x=0,y=0,heading=-Math.PI/2;for(let i=0;i<steps;i++){const z=t.length*i/steps;heading+=turns(z,t)*.016;x+=Math.cos(heading);y+=Math.sin(heading);a.push({x,y})}
 const minX=Math.min(...a.map(q=>q.x)),maxX=Math.max(...a.map(q=>q.x)),minY=Math.min(...a.map(q=>q.y)),maxY=Math.max(...a.map(q=>q.y));
 const scale=Math.min(179/Math.max(1,maxX-minX),119/Math.max(1,maxY-minY));
