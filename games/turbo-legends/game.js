@@ -159,13 +159,14 @@ function createOpponents(){
  state.rivals=Array.from({length:19},(_,i)=>{
    const ahead=i<10;
    const row=ahead?Math.floor((9-i)/2):Math.floor((i-10)/2);
-   const z=ahead?36+row*39:-38-row*39;
-   const lane=i%2?.43:-.43;
-   const pace=(ahead?269+(9-i)*1.55:261-(i-10)*1.15)+(i%4-1.5)*2.0;
+   // Stagger field over distance, so not all 20 cars appear as one cluster.
+   const z=ahead?72+row*93+(i%2)*18:-68-row*88-(i%2)*20;
+   const lane=i%2?.48:-.48;
+   const pace=(ahead?258+(9-i)*2.9:253-(i-10)*1.8)+(i%4-1.5)*3.8;
    return {id:i,name:names[i],color:colors[i],lane,z,speed:pace*multiplier,
     velocity:0,drive:(i*7.13)%6,baseLane:lane,passTarget:null,
     passCooldown:.5+(i%4)*.6,braking:false,finished:false,finishTime:0,
-    skill:1.01+(9-i)*.002+(i%3-1)*.012};
+    skill:.99+(9-i)*.003+(i%3-1)*.018,cruiseLane:lane};
  });
 }
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20'+(d.bestLap?' · лучший круг '+formatTime(d.bestLap):''):'🏆 Лучший результат: ещё не установлен'}
