@@ -11,11 +11,11 @@ const model=()=>window.TurboTrackModel;
 const corner=(z,track)=>model()?.curvature(z,track)||0;
 const lookAhead=(z,track,range)=>{
  let peak=0;
- for(let d=0;d<=range;d+=25){const k=corner(z+d,track);if(Math.abs(k)>Math.abs(peak))peak=k}
+ for(let d=0;d<=range;d+=25*ARCADE_PACE){const k=corner(z+d,track);if(Math.abs(k)>Math.abs(peak))peak=k}
  return peak;
 };
 function cornerLimit(z,track,grip=1){
- const severity=Math.abs(lookAhead(z+35,track,115));
+ const severity=Math.abs(lookAhead(z+35*ARCADE_PACE,track,115*ARCADE_PACE));
  return clamp((295-38*severity)*Math.sqrt(grip),190,306);
 }
 function vehicle(p,input,track,garage,dt){
@@ -74,7 +74,7 @@ function planAI(o,participants,track,dt){
  if(o.finished)return;
  dt=clamp(dt,0,1/30);
  const skill=clamp(o.skill||1,.82,1.19);
- const curveAhead=Math.abs(lookAhead(o.z+50,track,clamp(o.velocity*.65,105,190)));
+ const curveAhead=Math.abs(lookAhead(o.z+50*ARCADE_PACE,track,clamp(o.velocity*.65,105,190)*ARCADE_PACE));
  const cornerSpeed=clamp((306-34*curveAhead)*(.95+.055*skill),204,310);
  let desired=Math.min(o.speed,cornerSpeed);
  // Maintain an individual cruising lane until there is a real reason to change.
@@ -108,7 +108,7 @@ function planAI(o,participants,track,dt){
    if(danger){o.cruiseLane=o.lane;o.passTarget=null;o.passCooldown=2.7;}
    else if(Math.abs(o.lane-o.passTarget)<.05)o.passTarget=null;
  }
- const bend=corner(o.z+32,track);
+ const bend=corner(o.z+32*ARCADE_PACE,track);
  const apexShift=clamp(-bend*.055,-.10,.10);
  const wanted=clamp(o.cruiseLane+apexShift,-.78,.78);
  o.lane=approach(o.lane,wanted,dt*(.16+.09*skill));
