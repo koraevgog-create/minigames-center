@@ -10,7 +10,7 @@ const tracks={
 };
 const colors=['#23b5cf','#ecb74e','#9f89e8','#ee7749','#a9d14d','#d5e4ef','#d85695','#55a9fa','#8dc2ac','#f2aa63','#ea5e69','#a4bfd6','#d5ad64','#5dd4a7','#7d94e9','#d69add','#e6e6b8','#5bcded','#ff8f5f'];
 const names=['RAVEN','BLAZE','NOVA','STRIKE','FALCON','VECTOR','PHANTOM','SPEEDSTER','LANCER','ECLIPSE','BOLT','CIPHER','ATLAS','VIPER','DRIFT','NEON','RAPTOR','FURY','TEMPEST'];
-const state={phase:'menu',track:tracks.coast,difficulty:'normal',time:0,count:3,last:0,player:{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,color:'#ef424e',collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1},rivals:[],keys:{},touch:{},position:20,results:[],engine:null,audio:false,soundTime:0,laps:[],lastLapTime:0,flashUntil:0,flashText:''};
+const state={phase:'menu',track:tracks.coast,difficulty:'normal',time:0,count:3,last:0,player:{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,color:'#ef424e',collide:0,contactIds:new Set(),drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1},rivals:[],keys:{},touch:{},position:20,results:[],engine:null,audio:false,soundTime:0,laps:[],lastLapTime:0,flashUntil:0,flashText:''};
 const RECORD_KEY='turbo-legends-records-01';let bestRecords={};try{bestRecords=JSON.parse(localStorage.getItem(RECORD_KEY)||'{}')||{}}catch{};let lastBoardAt=-10;const lapCount=3,roadWidth=1900,drawDistance=2700,cameraHeight=900;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,wrap=(v,l)=>((v%l)+l)%l;
 function curvature(z){return window.TurboTrackModel?.curvature(z,state.track)||0;}
@@ -172,7 +172,7 @@ function createOpponents(){
  });
 }
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20'+(d.bestLap?' · лучший круг '+formatTime(d.bestLap):''):'🏆 Лучший результат: ещё не установлен'}
-function resetRace(){const p=state.player;state.time=0;state.count=3;state.position=11;state.results=[];state.laps=[];state.lastLapTime=0;state.flashUntil=0;state.flashText='';Object.assign(p,{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1,steerVelocity:0,lateralVelocity:0,color:$('carColor').value,nitro:window.TurboGarage?.stats().nitroCapacity||100});state.track=tracks[$('track').value]||tracks.coast;state.difficulty=$('difficulty').value;createOpponents();window.TurboRaceEvents?.reset(state);state.keys={};state.touch={};lastBoardAt=-10;}
+function resetRace(){const p=state.player;state.time=0;state.count=3;state.position=11;state.results=[];state.raceStats={overtakes:0,contacts:0,closePasses:0,longestDraft:0,activeDraft:0};state.laps=[];state.lastLapTime=0;state.flashUntil=0;state.flashText='';Object.assign(p,{z:0,x:0,speed:0,nitro:100,health:100,lap:1,finished:false,collide:0,drift:0,offRoad:false,boosting:false,slipstream:0,topSpeed:0,gear:1,steerVelocity:0,lateralVelocity:0,color:$('carColor').value,nitro:window.TurboGarage?.stats().nitroCapacity||100});state.track=tracks[$('track').value]||tracks.coast;state.difficulty=$('difficulty').value;createOpponents();window.TurboRaceEvents?.reset(state);state.keys={};state.touch={};lastBoardAt=-10;}
 function totalLength(){return state.track.length*lapCount}
 function physicsScale(){return window.TurboRacePhysics?.worldScale||1}
 function update(dt){if(state.phase==='menu'||state.phase==='finish'||state.phase==='pause')return;if(state.phase==='countdown'){state.count-=dt;$('countdown').textContent=state.count>0?Math.ceil(state.count):'GO!';if(state.count<-.55){state.phase='race';$('countdown').hidden=true;$('hint').hidden=false}return}
@@ -189,7 +189,12 @@ p.collide=Math.max(0,p.collide-dt);
 const garage=window.TurboGarage?.stats();
 const aheadForDraft=state.rivals.some(o=>!o.finished&&o.z>p.z+6*(physicsScale())&&o.z<p.z+90*(physicsScale())&&Math.abs(o.lane-p.x)<.22);
 p.slipstream=clamp(p.slipstream+(aheadForDraft?dt*.65:-dt*.95),0,1);
+if(state.raceStats){
+ state.raceStats.activeDraft=aheadForDraft?state.raceStats.activeDraft+dt:0;
+ state.raceStats.longestDraft=Math.max(state.raceStats.longestDraft,state.raceStats.activeDraft);
+}
 const physics=window.TurboRacePhysics;
+const prevCarGaps=new Map(state.rivals.map(o=>[o.id,o.z-p.z]));
 if(physics){
  physics.vehicle(p,inputs,state.track,garage,dt);
  const playerSnapshot={id:'player',z:p.z,lane:p.x,velocity:p.speed,finished:false,isPlayer:true};
@@ -207,7 +212,24 @@ if(physics){
  const pickup=window.TurboRaceEvents?.update(state,garage);
  if(pickup)announce(pickup,2.2);
  const collision=physics.resolveInteractions(state);
- if(collision){beep(120,.12);announce('💥 СТОЛКНОВЕНИЕ · -'+Math.round(Math.max(0,100-p.health))+'% состояния',1.5)}
+ if(collision){
+  state.raceStats.contacts++;
+  beep(120,.12);
+  announce('💥 КОНТАКТ · -'+collision.damage.toFixed(1)+'% прочности',1.5);
+ }
+ // Detect genuine side-by-side passes, using crossings rather than arbitrary
+ // closeness snapshots. Each opponent can be counted on subsequent reversals.
+ if(p.speed>95){
+  for(const o of state.rivals){
+   if(o.finished)continue;
+   const prev=prevCarGaps.get(o.id),now=o.z-p.z;
+   const passed=prev>0&&now<=0;
+   if(passed&&Math.abs(o.lane-p.x)>=.24&&Math.abs(o.lane-p.x)<.52&&!collision){
+    state.raceStats.closePasses++;
+    if(state.raceStats.closePasses%3===0)announce('✨ БЛИЗКИЙ ОБГОН · '+state.raceStats.closePasses,1.5);
+   }
+  }
+ }
 }else{
  // If the physics module cannot be loaded, the game remains steerable.
  const steer=Number(!!inputs.right)-Number(!!inputs.left);
@@ -216,7 +238,7 @@ if(physics){
  p.z+=p.speed/3.6*dt;
  for(const opponent of state.rivals)opponent.z+=opponent.velocity/3.6*dt;
 }
-const oldRank=state.position,oldLap=p.lap;state.position=1+state.rivals.filter(o=>o.z>p.z+.01||(Math.abs(o.z-p.z)<=.01&&o.finished)).length;p.lap=Math.min(lapCount,Math.floor(p.z/state.track.length)+1);
+const oldRank=state.position,oldLap=p.lap;state.position=1+state.rivals.filter(o=>o.z>p.z+.01||(Math.abs(o.z-p.z)<=.01&&o.finished)).length;if(state.raceStats&&state.position<oldRank)state.raceStats.overtakes+=oldRank-state.position;p.lap=Math.min(lapCount,Math.floor(p.z/state.track.length)+1);
 if(p.lap>oldLap){const split=state.time-state.lastLapTime;state.laps.push(split);state.lastLapTime=state.time;announce('🏁 КРУГ '+oldLap+' · '+formatTime(split),3.4);renderSplits();}
 else if(state.position<oldRank&&state.time>4)announce('⚡ ОБГОН! '+state.position+' / 20',1.75);
 else if(state.position>oldRank&&state.time>4)announce('↘ ПОТЕРЯ ПОЗИЦИИ · '+state.position+' / 20',1.6);
@@ -227,7 +249,7 @@ function announce(message,seconds=2){state.flashText=message;state.flashUntil=st
 function renderSplits(){const area=$('lapSplitsList');area.replaceChildren();state.laps.forEach((t,i)=>{const el=document.createElement('div');el.textContent='Круг '+(i+1)+'  ·  '+formatTime(t);area.appendChild(el)});$('lapSplits').hidden=state.laps.length===0;}
 function finishRace(){state.phase='finish';const rank=1+state.rivals.filter(o=>o.finished&&o.finishTime<state.time||o.z>state.player.z).length;state.position=clamp(rank,1,20);window.TurboGarage?.finish(rank);
  if(state.pickupMoney>0)window.TurboGarage?.credit(state.pickupMoney);
- window.TurboChampionship?.finish(rank,state.rivals);const time=formatTime(state.time);const trackId=Object.keys(tracks).find(id=>tracks[id]===state.track);if(trackId){const old=bestRecords[trackId];if(!old||rank<old.rank||rank===old.rank&&state.time<old.time){bestRecords[trackId]={rank,time:state.time,bestLap:old?.bestLap};try{localStorage.setItem(RECORD_KEY,JSON.stringify(bestRecords))}catch{}}}const lapBest=Math.min(...state.laps.filter(v=>Number.isFinite(v)&&v>0));if(trackId&&Number.isFinite(lapBest)){const previous=bestRecords[trackId].bestLap;if(previous==null||lapBest<previous){bestRecords[trackId].bestLap=lapBest;try{localStorage.setItem(RECORD_KEY,JSON.stringify(bestRecords))}catch{}}}showRecord();$('finishHeadline').textContent=rank===1?'ПОБЕДА!':rank<=3?'НА ПОДИУМЕ!':'ГОНКА ЗАВЕРШЕНА';$('finishPosition').innerHTML=rank+'<small> / 20</small>';$('finishSummary').textContent=state.track.name+' · '+time+' · '+(100-state.player.health).toFixed(0)+'% повреждений';const result=$('results');result.replaceChildren();const raceStats=document.createElement('div');raceStats.className='race-summary-v1';raceStats.textContent='⚡ Макс. скорость: '+Math.round(state.player.topSpeed)+' км/ч · 🏁 Лучший круг: '+(Number.isFinite(lapBest)?formatTime(lapBest):'—')+' · 🛡 Состояние: '+Math.round(state.player.health)+'%'+(state.pickupMoney?' · 💰 Бонусы: '+state.pickupMoney+' ₽':'');result.appendChild(raceStats);const results=[{name:'ВЫ',z:state.player.z,t:state.time,you:true},...state.rivals.map(o=>({name:o.name,z:o.z,t:o.finished?o.finishTime:Infinity}))].sort((a,b)=>b.z-a.z||a.t-b.t);for(let i=0;i<results.length;i++){const item=results[i],row=document.createElement('div');row.className='result-row'+(item.you?' you':'');row.textContent=String(i+1).padStart(2,'0')+' · '+item.name;const timeEl=document.createElement('span');timeEl.textContent=Number.isFinite(item.t)?formatTime(item.t):'Едет';row.appendChild(timeEl);result.appendChild(row)}$('finish').hidden=false;$('pauseBtn').hidden=true;$('touchControls').hidden=true;$('raceProgress').hidden=true;$('raceFlash').hidden=true;$('raceLeaderboard').hidden=true;$('hint').hidden=true;}
+ window.TurboChampionship?.finish(rank,state.rivals);const time=formatTime(state.time);const trackId=Object.keys(tracks).find(id=>tracks[id]===state.track);if(trackId){const old=bestRecords[trackId];if(!old||rank<old.rank||rank===old.rank&&state.time<old.time){bestRecords[trackId]={rank,time:state.time,bestLap:old?.bestLap};try{localStorage.setItem(RECORD_KEY,JSON.stringify(bestRecords))}catch{}}}const lapBest=Math.min(...state.laps.filter(v=>Number.isFinite(v)&&v>0));if(trackId&&Number.isFinite(lapBest)){const previous=bestRecords[trackId].bestLap;if(previous==null||lapBest<previous){bestRecords[trackId].bestLap=lapBest;try{localStorage.setItem(RECORD_KEY,JSON.stringify(bestRecords))}catch{}}}showRecord();$('finishHeadline').textContent=rank===1?'ПОБЕДА!':rank<=3?'НА ПОДИУМЕ!':'ГОНКА ЗАВЕРШЕНА';$('finishPosition').innerHTML=rank+'<small> / 20</small>';$('finishSummary').textContent=state.track.name+' · '+time+' · '+(100-state.player.health).toFixed(0)+'% повреждений';const result=$('results');result.replaceChildren();const raceStats=document.createElement('div');raceStats.className='race-summary-v1';raceStats.textContent='⚡ Макс. скорость: '+Math.round(state.player.topSpeed)+' км/ч · 🏁 Лучший круг: '+(Number.isFinite(lapBest)?formatTime(lapBest):'—')+' · 🛡 Состояние: '+Math.round(state.player.health)+'%'+(state.pickupMoney?' · 💰 Бонусы: '+state.pickupMoney+' ₽':'')+' · 🏎 Обгоны: '+(state.raceStats?.overtakes||0)+' · ✨ Близкие обгоны: '+(state.raceStats?.closePasses||0)+' · 💥 Контакты: '+(state.raceStats?.contacts||0)+' · 💨 Воздушный мешок: '+Math.round(state.raceStats?.longestDraft||0)+' с';result.appendChild(raceStats);const results=[{name:'ВЫ',z:state.player.z,t:state.time,you:true},...state.rivals.map(o=>({name:o.name,z:o.z,t:o.finished?o.finishTime:Infinity}))].sort((a,b)=>b.z-a.z||a.t-b.t);for(let i=0;i<results.length;i++){const item=results[i],row=document.createElement('div');row.className='result-row'+(item.you?' you':'');row.textContent=String(i+1).padStart(2,'0')+' · '+item.name;const timeEl=document.createElement('span');timeEl.textContent=Number.isFinite(item.t)?formatTime(item.t):'Едет';row.appendChild(timeEl);result.appendChild(row)}$('finish').hidden=false;$('pauseBtn').hidden=true;$('touchControls').hidden=true;$('raceProgress').hidden=true;$('raceFlash').hidden=true;$('raceLeaderboard').hidden=true;$('hint').hidden=true;}
 function formatTime(sec){const minutes=Math.floor(sec/60),seconds=Math.floor(sec%60),tenths=Math.floor((sec%1)*10);return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0')+'.'+tenths}
 function updateHud(){$('raceFlash').hidden=state.time>state.flashUntil||!state.flashText;const pct=clamp(state.player.z/totalLength()*100,0,100);$('raceProgressFill').style.width=pct.toFixed(1)+'%';$('raceProgressLabel').textContent=Math.floor(pct)+'%';$('position').innerHTML=state.position+'<small> / 20</small>';$('lap').innerHTML=state.player.lap+'<small> / '+lapCount+'</small>';$('time').textContent=formatTime(state.time);$('speed').textContent=Math.round(state.player.speed);$('nitroBar').style.width=(state.player.nitro/(window.TurboGarage?.stats().nitroCapacity||100)*100)+'%';$('nitroText').textContent=Math.round(state.player.nitro/(window.TurboGarage?.stats().nitroCapacity||100)*100)+'%';$('damage').textContent=Math.round(state.player.health)+'%';$('damage').style.color=state.player.health<45?'#ff8e85':'#9aefbd';$('gear').textContent=state.player.gear;const nextBend=window.TurboTrackModel?.upcoming(state.player.z+25*physicsScale(),state.track,235*physicsScale())||0;
 const cornerAdvice=window.TurboRacePhysics?.cornerLimit(state.player.z+85*physicsScale(),state.track,window.TurboGarage?.stats().handling||1)||225;
