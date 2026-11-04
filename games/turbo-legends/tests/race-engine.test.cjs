@@ -295,3 +295,16 @@ test('two racers driving nearly together do not get a large collision penalty',(
  assert.ok(hit.speedLoss<6);
  assert.equal(p.x,0);
 });
+
+test('difficulty-dependent acceleration factor changes CPU progress without teleporting',()=>{
+ const track={theme:'coast',length:17550},dt=1/60;
+ const low={...roster()[0],id:100,z:0,lane:-.4,cruiseLane:-.4,baseLane:-.4,accelerationMultiplier:.91};
+ const high={...roster()[0],id:101,z:0,lane:.4,cruiseLane:.4,baseLane:.4,accelerationMultiplier:1.08};
+ low.speed=high.speed=290;
+ for(let i=0;i<60*15;i++){
+  physics.planAI(low,[{...low}],track,dt);
+  physics.planAI(high,[{...high}],track,dt);
+ }
+ assert.ok(high.z>low.z+60,'hard driver acceleration should create a measurable gap');
+ assert.ok(low.z>0&&high.z>0,'both should move forward');
+});
