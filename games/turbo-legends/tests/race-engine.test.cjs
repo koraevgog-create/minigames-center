@@ -166,16 +166,16 @@ test('CPU overtake keeps lateral movement bounded and does not oscillate wildly'
  assert.ok(pursuer.z>160,'AI makes progress');
 });
 
-test('roadside reference spacing matches real metre-based vehicle speed',()=>{
+test('arcade world movement drives trees and reflectors past the car faster',()=>{
  const treeSpacing=17,reflectorSpacing=9;
- const metresPerSecond=100/3.6;
- const treePeriod=treeSpacing/metresPerSecond;
- const reflectorPeriod=reflectorSpacing/metresPerSecond;
- assert.ok(treePeriod>=.60&&treePeriod<=.62);
- assert.ok(reflectorPeriod>=.32&&reflectorPeriod<=.33);
+ const worldUnitsPerSecond=(100/3.6)*physics.worldScale;
+ const treePeriod=treeSpacing/worldUnitsPerSecond;
+ const reflectorPeriod=reflectorSpacing/worldUnitsPerSecond;
+ assert.ok(treePeriod>.20&&treePeriod<.25);
+ assert.ok(reflectorPeriod>.10&&reflectorPeriod<.14);
 });
 test('opponent traffic spreads instead of collapsing into one stationary pack',()=>{
- const track={theme:'coast',length:6500},rivals=roster(),p=car(),dt=1/60;
+ const track={theme:'coast',length:17550},rivals=roster(),p=car(),dt=1/60;
  const startSpread=Math.max(...rivals.map(o=>o.z))-Math.min(...rivals.map(o=>o.z));
  assert.ok(startSpread>800,'field must occupy realistic distance');
  let regressions=0,overlaps=0;
