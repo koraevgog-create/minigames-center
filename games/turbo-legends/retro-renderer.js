@@ -131,6 +131,48 @@ function roadside(state,pts){
   }
  }
 }
+function landmarks(state,pts){
+ // Large, recognizable track-side landmarks at fixed world positions.
+ // All placement uses the same continuous perspective as cars and road.
+ const z=state.player.z,spacing=360;
+ for(let k=Math.ceil(z/spacing);k*spacing<z+2300;k++){
+  const d=k*spacing-z;if(d<35)continue;
+  const i=clamp(Math.floor(d/STEP),0,pts.length-2),f=(d-i*STEP)/STEP;
+  const a=pts[i],b=pts[i+1];if(!a||!b)continue;
+  const x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f;
+  const width=a.width+(b.width-a.width)*f,scale=a.scale+(b.scale-a.scale)*f;
+  const side=k%2?-1:1,px=x+side*width*1.8;
+  const h=clamp(scale*390,8,205),w=h*.55;
+  c.save();c.translate(px,y);
+  if(state.track.theme==='coast'){
+   // White lighthouse and coastal sign.
+   c.fillStyle='#ebeae1';c.fillRect(-w*.25,-h,w*.5,h);
+   c.fillStyle='#e75058';c.fillRect(-w*.3,-h,w*.6,h*.13);
+   c.fillStyle='#e75058';c.fillRect(-w*.3,-h*.53,w*.6,h*.12);
+   c.fillStyle='#e6f8ef';c.fillRect(-w*.33,-h*1.12,w*.66,h*.13);
+   c.fillStyle='#203344';c.fillRect(-w*.12,-h*.85,w*.24,h*.19);
+  }else if(state.track.theme==='alpine'){
+   // Snow-capped rock outcrop.
+   polygon([[-w*.9,0],[-w*.45,-h*.64],[0,-h*1.18],[w*.55,-h*.5],[w*.9,0]],'#627988');
+   polygon([[-w*.22,-h*.87],[0,-h*1.18],[w*.23,-h*.87],[w*.04,-h*.97]],'#e1edf0');
+   c.fillStyle='#f5f7f2';c.fillRect(-w*.18,-h*.33,w*.36,h*.065);
+  }else if(state.track.theme==='desert'){
+   // Three-layer canyon monument.
+   polygon([[-w*.8,0],[-w*.70,-h*.42],[-w*.33,-h*.44],[-w*.23,-h],[w*.35,-h],[w*.44,-h*.37],[w*.80,-h*.34],[w*.93,0]],'#a45e4b');
+   c.fillStyle='#d28d65';c.fillRect(-w*.20,-h*.80,w*.54,h*.075);
+   c.fillStyle='#ca7759';c.fillRect(-w*.61,-h*.27,w*1.19,h*.075);
+  }else{
+   // Illuminated city tower.
+   c.fillStyle='#12263c';c.fillRect(-w*.52,-h,w*1.05,h);
+   c.fillStyle='#3ee0e2';c.fillRect(-w*.56,-h*.96,w*1.12,h*.055);
+   for(let iy=0;iy<6;iy++)for(let ix=0;ix<3;ix++){
+    c.fillStyle=(ix+iy+k)%3?'#71b4d4':'#f7b977';
+    c.fillRect(-w*.39+ix*w*.30,-h*.81+iy*h*.13,w*.11,h*.047);
+   }
+  }
+  c.restore();
+ }
+}
 function roadsideReflectors(state,pts){
  // Regular 18-metre roadside markers give a stable visual speed reference.
  // At 180 km/h, nearly three pairs pass per real second.
@@ -285,7 +327,7 @@ function render(state,canvas,out){
  const pal=palettes[state.track.theme]||palettes.coast;
  c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
  scenery(state,pal);
- const pts=model(state);asphalt(state,pal,pts);roadsideReflectors(state,pts);roadside(state,pts);window.TurboRaceEvents?.draw(state,c,pts);cars(state,pts);drivingEffects(state);weather(state);
+ const pts=model(state);asphalt(state,pal,pts);roadsideReflectors(state,pts);roadside(state,pts);landmarks(state,pts);window.TurboRaceEvents?.draw(state,c,pts);cars(state,pts);drivingEffects(state);weather(state);
  if(state.phase==='pause'){c.fillStyle='#071322a1';c.fillRect(0,0,W,H);c.fillStyle='#f5ebd2';c.font='900 48px system-ui';c.textAlign='center';c.fillText('ПАУЗА',W/2,H/2)}
  const dpr=Math.min(devicePixelRatio||1,2),bw=Math.max(320,innerWidth),bh=Math.max(300,innerHeight);
  if(canvas.width!==Math.round(bw*dpr)||canvas.height!==Math.round(bh*dpr)){canvas.width=Math.round(bw*dpr);canvas.height=Math.round(bh*dpr)}
