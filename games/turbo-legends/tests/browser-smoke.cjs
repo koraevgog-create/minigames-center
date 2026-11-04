@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
   }));
-  assert.ok(before.menu);assert.match(before.version,/2\.8/);assert.equal(before.tracks,4);
+  assert.ok(before.menu);assert.match(before.version,/2\.9/);assert.equal(before.tracks,4);
   await page.click('#start');
   const begun=await page.evaluate(()=>({phase:window.TurboLegends.state.phase,grid:window.TurboLegends.state.rivals.length}));
   assert.equal(begun.phase,'countdown');assert.equal(begun.grid,19);
@@ -69,9 +69,12 @@ const {chromium}=require('playwright');
   });
   const final=await page.evaluate(()=>({phase:window.TurboLegends.state.phase,
    finishVisible:!document.getElementById('finish').hidden,
-   rows:document.querySelectorAll('#results .result-row').length}));
+   rows:document.querySelectorAll('#results .result-row').length,
+   stats:document.querySelector('.race-summary-v1')?.textContent||''}));
   assert.equal(final.phase,'finish');
   assert.ok(final.finishVisible);assert.equal(final.rows,20);
+  assert.match(final.stats,/Обгоны:/);
+  assert.match(final.stats,/Контакты:/);
   assert.deepEqual(errors,[],'no browser JavaScript exceptions');
   console.log(JSON.stringify({success:true,before,progress,final}));
  }finally{await browser.close()}
