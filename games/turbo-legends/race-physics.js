@@ -78,7 +78,8 @@ function planAI(o,participants,track,dt){
  const traffic=participants.filter(v=>v.id!==o.id&&!v.finished&&v.z>o.z&&v.z-o.z<95&&Math.abs(v.lane-o.lane)<.30).sort((a,b)=>a.z-b.z);
  const ahead=traffic[0];
  o.passCooldown=Math.max(0,(o.passCooldown||0)-dt);
- let targetLane=o.baseLane;
+ // Small apex shift makes CPU cars follow bends rather than rigid parallel rails.
+ let targetLane=clamp(o.baseLane-corner(o.z+38,track)*.075,-.73,.73);
  if(o.passTarget!=null)targetLane=o.passTarget;
  if(ahead){
   const gap=ahead.z-o.z;
@@ -97,7 +98,7 @@ function planAI(o,participants,track,dt){
   const blocked=participants.some(v=>v.id!==o.id&&!v.finished&&
      Math.abs(v.z-o.z)<10&&Math.abs(v.lane-o.passTarget)<.22);
   if(blocked){
-   o.passTarget=null;o.passCooldown=2;targetLane=o.baseLane;
+   o.passTarget=null;o.passCooldown=2;targetLane=clamp(o.baseLane-corner(o.z+38,track)*.075,-.73,.73);
   }else if(!ahead&&o.passCooldown<1.2&&Math.abs(o.lane-o.passTarget)<.1){
    o.passTarget=null;targetLane=o.baseLane;
   }
