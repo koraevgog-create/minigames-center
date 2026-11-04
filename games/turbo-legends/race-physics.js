@@ -37,30 +37,38 @@ function vehicle(p,input,track,garage,dt){
  p.boosting=activeNitro;
  p.topSpeed=Math.max(p.topSpeed,p.speed);
  p.gear=clamp(1+Math.floor(p.speed/51),1,6);
- // Curves exert sideways force only when moving quickly. Player input always
- // has enough authority to recover, but a fast uncorrected bend costs distance.
+ // Arcade handling: progressive steering, measurable grip and recoverable slides.
+ // The corner's physical intensity rises with speed, not with frame rate.
  const localCurve=corner(p.z,track),safeSpeed=cornerLimit(p.z,track,grip);
- const speedFactor=clamp(p.speed/235,0,1.40);
- const over=clamp((p.speed-safeSpeed)/85,0,1.7);
- const turnPush=localCurve*(.030+.10*speedFactor*speedFactor+.12*over);
- p.steerVelocity=approach(p.steerVelocity||0,steer,dt*(4.4+grip));
- const steeringPower=(.30+.52*speedFactor)*grip*(1-.12*over);
- const rescue=(p.offRoad&&steer===0&&p.speed<105)?-Math.sign(p.x)*.48:0;
- const target=p.steerVelocity*steeringPower-turnPush+rescue;
- p.lateralVelocity=approach(p.lateralVelocity||0,target,dt*(2.6+grip));
- p.x=clamp(p.x+p.lateralVelocity*dt*1.34,-1.55,1.55);
+ const speedFactor=clamp(p.speed/240,0,1.45);
+ const excess=clamp((p.speed-safeSpeed)/100,0,1.6);
+ const bendLoad=Math.abs(localCurve)*speedFactor*speedFactor;
+ const gripLoad=clamp(bendLoad/(grip*1.65)+excess*.27,0,2);
+ // Steering remains capable of recovering the vehicle on the asphalt.
+ const steeringAuthority=(.37+.49*speedFactor)*grip/(1+.13*excess);
+ const bodyInertia=clamp((p.speed-85)/240,0,.85);
+ p.steerVelocity=approach(p.steerVelocity||0,steer,dt*(5.8-1.5*bodyInertia));
+ const bendForce=localCurve*(.024+.094*speedFactor*speedFactor+.085*excess);
+ const rescue=(p.offRoad&&steer===0&&p.speed<135)?-Math.sign(p.x)*.45:0;
+ const wanted=p.steerVelocity*steeringAuthority-bendForce+rescue;
+ // A brief, controllable slide appears only under load. It fades rapidly
+ // when the driver countersteers or reduces speed.
+ p.lateralVelocity=approach(p.lateralVelocity||0,wanted,dt*(4.4-1.45*bodyInertia));
+ p.x=clamp(p.x+p.lateralVelocity*dt*1.36,-1.52,1.52);
  p.drift=p.lateralVelocity;
  p.offRoad=Math.abs(p.x)>1.04;
+ p.cornerLoad=gripLoad;
  if(p.offRoad){
-  const outside=clamp((Math.abs(p.x)-1.04)/.51,0,1);
-  p.speed=Math.max(0,p.speed-Math.min(p.speed*.27,36+95*outside)*dt);
-  p.health=Math.max(20,p.health-(.12+.38*outside)*dt*(p.speed>55?1:0));
+  const outside=clamp((Math.abs(p.x)-1.04)/.48,0,1);
+  p.speed=Math.max(0,p.speed-Math.min(p.speed*.28,42+98*outside)*dt);
+  if(p.speed>55)p.health=Math.max(20,p.health-(.11+.42*outside)*dt);
  }
- // Fast corners scrub speed even if the player holds full throttle.
- const scrub=Math.abs(localCurve)>1.0?Math.max(0,over-.10)*Math.abs(localCurve)*16:0;
- p.speed=Math.max(0,p.speed-scrub*dt);
+ // Keeping the accelerator down in a hard bend scrubs speed. Braking *before*
+ // the corner prevents the extra loss and yields a faster exit.
+ const slidePenalty=Math.max(0,gripLoad-.78)*(9+Math.abs(localCurve)*12);
+ p.speed=Math.max(0,p.speed-slidePenalty*dt);
  p.z+=p.speed/3.6*dt*ARCADE_PACE;
- return {safeSpeed,curve:localCurve,overSpeed:over};
+ return {safeSpeed,curve:localCurve,cornerLoad:gripLoad};
 }
 const LANES=[-.72,-.36,0,.36,.72];
 function canShift(car,others,lane){
