@@ -14,11 +14,12 @@ const lengths={coast:6500,alpine:7200,desert:6800,night:6900};
 const car=()=>({z:0,x:0,speed:0,nitro:100,health:100,topSpeed:0,steerVelocity:0,lateralVelocity:0,collide:0,slipstream:0});
 const roster=()=>Array.from({length:19},(_,i)=>{
  const ahead=i<10,row=ahead?Math.floor((9-i)/2):Math.floor((i-10)/2);
- const z=ahead?36+row*39:-38-row*39,lane=i%2?.43:-.43;
- const pace=(ahead?269+(9-i)*1.55:261-(i-10)*1.15)+(i%4-1.5)*2.0;
- return {id:i,z,lane,baseLane:lane,velocity:0,speed:pace,
-   skill:1.01+(9-i)*.002+(i%3-1)*.012,
-   passCooldown:.5+(i%4)*.6,passTarget:null,finished:false};
+ const z=ahead?72+row*93+(i%2)*18:-68-row*88-(i%2)*20;
+ const lane=i%2?.48:-.48;
+ const pace=(ahead?258+(9-i)*2.9:253-(i-10)*1.8)+(i%4-1.5)*3.8;
+ return {id:i,z,lane,baseLane:lane,cruiseLane:lane,speed:pace,velocity:0,
+ skill:.99+(9-i)*.003+(i%3-1)*.018,passCooldown:.5+(i%4)*.6,
+ passTarget:null,finished:false};
 });
 test('all four circuits remain finite, controllable and nonnegative for long races',()=>{
  for(const theme of Object.keys(lengths)){
@@ -163,4 +164,31 @@ test('CPU overtake keeps lateral movement bounded and does not oscillate wildly'
  assert.ok(maxStep<.012,'lane movement must be smooth every physics tick');
  assert.ok(turns<8,'avoid lane oscillation');
  assert.ok(pursuer.z>160,'AI makes progress');
+});
+
+test('roadside reference spacing matches real metre-based vehicle speed',()=>{
+ const treeSpacing=17,reflectorSpacing=9;
+ const metresPerSecond=100/3.6;
+ const treePeriod=treeSpacing/metresPerSecond;
+ const reflectorPeriod=reflectorSpacing/metresPerSecond;
+ assert.ok(treePeriod>=.60&&treePeriod<=.62);
+ assert.ok(reflectorPeriod>=.32&&reflectorPeriod<=.33);
+});
+test('opponent traffic spreads instead of collapsing into one stationary pack',()=>{
+ const track={theme:'coast',length:6500},rivals=roster(),p=car(),dt=1/60;
+ const startSpread=Math.max(...rivals.map(o=>o.z))-Math.min(...rivals.map(o=>o.z));
+ assert.ok(startSpread>800,'field must occupy realistic distance');
+ let regressions=0,overlaps=0;
+ for(let tick=0;tick<60*120;tick++){
+  const snapshot=[...rivals.map(o=>({...o})),{id:'player',z:p.z,lane:p.x,velocity:p.speed,finished:false}];
+  for(const r of rivals){const oldZ=r.z;physics.planAI(r,snapshot,track,dt);if(r.z<oldZ)regressions++;}
+  physics.resolveInteractions({player:p,rivals});
+  for(let i=0;i<rivals.length;i++)for(let j=i+1;j<rivals.length;j++){
+   if(Math.abs(rivals[i].z-rivals[j].z)<4&&Math.abs(rivals[i].lane-rivals[j].lane)<.26)overlaps++;
+  }
+ }
+ const spread=Math.max(...rivals.map(o=>o.z))-Math.min(...rivals.map(o=>o.z));
+ assert.equal(regressions,0,'AI must never teleport backwards');
+ assert.equal(overlaps,0,'AI cars must not intersect in the same lane');
+ assert.ok(spread>startSpread*.9,'cars should stay distributed');
 });
