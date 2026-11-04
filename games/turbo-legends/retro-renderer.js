@@ -4,7 +4,7 @@
 const V=document.createElement('canvas');V.width=960;V.height=540;
 const c=V.getContext('2d',{alpha:false});
 const W=960,H=540,HZ=214,DEPTH=245,MAX=3000,STEP=24;
-const ROADSIDE_SPACING=58,MARKER_SPACING=29;
+const ROADSIDE_SPACING=17,MARKER_SPACING=9;
 const palettes={
  coast:{sky:['#5aa2d5','#c4e9ef'],far:'#6a96ba',mid:'#48899f',near:'#378b83',grass:['#428b56','#468f57'],road:['#454b5b','#474d60'],sand:'#e0bd87'},
  alpine:{sky:['#4478ba','#b6dbef'],far:'#607b9d',mid:'#546f8c',near:'#436f75',grass:['#43835e','#498963'],road:['#414b5e','#434c5d'],sand:'#9cc3ba'},
@@ -63,11 +63,11 @@ function asphalt(state,pal,pts){
  const theme=state.track.theme;
  for(let i=pts.length-2;i>=0;i--){
   const near=pts[i],far=pts[i+1];if(near.y<=far.y)continue;
-  const stripe=Math.floor(far.z/54)%2;
+  const stripe=Math.floor(far.z/34)%2;
   c.fillStyle=pal.grass[Math.floor(far.z/165)%2];c.fillRect(0,far.y,W,near.y-far.y+2);
   const shoulder=theme==='desert'?pal.sand:theme==='alpine'?'#a1a7a6':'#576978';
   trapezoid(far,near,-1.16,1.16,shoulder);
-  const curb=Math.floor(far.z/27)%2?'#f8ebdf':'#cd3242';
+  const curb=Math.floor(far.z/16)%2?'#f8ebdf':'#cd3242';
   for(const side of [-1,1]){
    trapezoid(far,near,side*1.00,side*1.115,curb);
   }
@@ -75,12 +75,12 @@ function asphalt(state,pal,pts){
   for(const side of [-1,1]){
    trapezoid(far,near,side*.965,side*.986,'#dbe4e8');
   }
-  const marker=mod(far.z,70)<35;
+  const marker=mod(far.z,43)<21;
   if(marker)for(const pos of [-1/3,1/3]){
     trapezoid(far,near,pos-.012,pos+.012,'#e1e0d7');
   }
   // A little asphalt texture, intentionally subdued.
-  if(Math.floor(far.z/27)%7===0){
+  if(Math.floor(far.z/19)%7===0){
    c.strokeStyle='#d3deec12';c.lineWidth=1;c.beginPath();
    c.moveTo(far.x-far.width*.92,far.y);c.lineTo(near.x+near.width*.92,near.y);c.stroke();
   }
@@ -110,18 +110,19 @@ function tree(x,y,size,t,seed){
 function roadside(state,pts){
  const t=state.track.theme;
  // Distance-based placement prevents roadside assets from flickering as the camera moves.
- const start=Math.floor(state.player.z/ROADSIDE_SPACING),end=Math.ceil((state.player.z+MAX)/ROADSIDE_SPACING);
+ const start=Math.floor(state.player.z/ROADSIDE_SPACING),end=Math.ceil((state.player.z+Math.min(MAX,1450))/ROADSIDE_SPACING);
  for(let k=end;k>=start;k--){
   const d=k*ROADSIDE_SPACING-state.player.z;if(d<0||d>MAX)continue;
   const idx=clamp(Math.floor(d/STEP),0,pts.length-2),fraction=(d-idx*STEP)/STEP;
   const a=pts[idx],b=pts[idx+1];if(!a||!b)continue;
   const p={x:a.x+(b.x-a.x)*fraction,y:a.y+(b.y-a.y)*fraction,width:a.width+(b.width-a.width)*fraction,scale:a.scale+(b.scale-a.scale)*fraction};
-  const height=clamp(195*p.scale,3,185);
+  const height=clamp((170+(k%5)*8)*p.scale,3,190);
   for(const side of [-1,1]){
-   const x=p.x+side*(p.width*1.32+12*p.scale);
+   if((k+side*3)%3===0)continue;
+   const x=p.x+side*(p.width*(1.29+(k%5)*.08)+12*p.scale);
    tree(x,p.y,height,t,k+side);
   }
-  if(k%5===0){
+  if(k%9===0){
    const x=p.x+p.width*1.10,sz=clamp(p.scale*100,5,90);
    c.fillStyle='#e7edf1';c.fillRect(x-sz*.06,p.y-sz*.7,sz*.1,sz*.72);
    c.fillStyle='#16304b';c.fillRect(x-sz*.5,p.y-sz*1.1,sz*.95,sz*.40);
@@ -133,7 +134,7 @@ function roadside(state,pts){
 function roadsideReflectors(state,pts){
  // Regular 18-metre roadside markers give a stable visual speed reference.
  // At 180 km/h, nearly three pairs pass per real second.
- const spacing=18,limit=750,z=state.player.z;
+ const spacing=MARKER_SPACING,limit=680,z=state.player.z;
  const start=Math.floor(z/spacing)+1,end=Math.floor((z+limit)/spacing);
  for(let k=end;k>=start;k--){
   const d=k*spacing-z,i=clamp(Math.floor(d/STEP),0,pts.length-2);
