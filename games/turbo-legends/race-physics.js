@@ -137,7 +137,7 @@ function planAI(o,participants,track,dt){
  // Each racer has a different, bounded lateral response.
  o.lane=approach(o.lane,laneTarget,dt*(.17+.09*skill)*aggression);
  const diff=desired-o.velocity;
- const acceleration=diff>0?Math.min((26+o.id%4)*skill,diff*.58):Math.max(-119,diff*2.1);
+ const acceleration=diff>0?Math.min((26+o.id%4)*skill*(o.accelerationMultiplier||1),diff*.58*(o.accelerationMultiplier||1)):Math.max(-119,diff*2.1);
  o.braking=acceleration<-10;
  o.velocity=clamp(o.velocity+acceleration*dt,0,o.speed);
  o.z+=o.velocity/3.6*dt*ARCADE_PACE;
