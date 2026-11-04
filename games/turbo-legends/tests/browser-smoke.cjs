@@ -13,7 +13,29 @@ const {chromium}=require('playwright');
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
   }));
-  assert.ok(before.menu);assert.match(before.version,/3\.0/);assert.equal(before.tracks,4);
+  assert.ok(before.menu);assert.match(before.version,/3\.1/);assert.equal(before.tracks,4);
+  // Grip UI is driven by the same physics value as the corner simulation.
+  const gripUi=await page.evaluate(()=>{
+    const g=window.TurboLegends;
+    g.state.phase='race';
+    g.state.player.speed=220;
+    g.state.player.cornerLoad=1.3;
+    g.state.player.offRoad=false;
+    document.getElementById('tractionStatus').hidden=true;
+    g.update(1/60);
+    const active={hidden:document.getElementById('tractionStatus').hidden,
+      text:document.getElementById('tractionLabel').textContent,
+      width:document.getElementById('tractionFill').style.width};
+    g.state.player.offRoad=true;
+    g.update(1/60);
+    const offRoadLabel=document.getElementById('tractionLabel').textContent;
+    g.toMenu();
+    g.update(1/60);
+    return {active,offRoadLabel,hiddenInMenu:document.getElementById('tractionStatus').hidden};
+  });
+  assert.equal(gripUi.active.hidden,false);
+  assert.ok(gripUi.active.width.endsWith('%'));
+  assert.equal(gripUi.hiddenInMenu,true);
   // Difficulty must alter race opponents, not just a menu label.
   const tuning=await page.evaluate(()=>{
     const g=window.TurboLegends;
