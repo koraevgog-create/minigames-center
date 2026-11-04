@@ -26,6 +26,7 @@ const {chromium}=require('playwright');
     const active={hidden:document.getElementById('tractionStatus').hidden,
       text:document.getElementById('tractionLabel').textContent,
       width:document.getElementById('tractionFill').style.width};
+    g.state.player.x=1.35;
     g.state.player.offRoad=true;
     g.update(1/60);
     const offRoadLabel=document.getElementById('tractionLabel').textContent;
@@ -35,6 +36,7 @@ const {chromium}=require('playwright');
   });
   assert.equal(gripUi.active.hidden,false);
   assert.ok(gripUi.active.width.endsWith('%'));
+  assert.match(gripUi.offRoadLabel,/ОБОЧИНА/);
   assert.equal(gripUi.hiddenInMenu,true);
   // Difficulty must alter race opponents, not just a menu label.
   const tuning=await page.evaluate(()=>{
