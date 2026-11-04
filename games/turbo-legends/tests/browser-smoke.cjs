@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
   }));
-  assert.ok(before.menu);assert.match(before.version,/2\.5/);assert.equal(before.tracks,4);
+  assert.ok(before.menu);assert.match(before.version,/2\.6/);assert.equal(before.tracks,4);
   await page.click('#start');
   const begun=await page.evaluate(()=>({phase:window.TurboLegends.state.phase,grid:window.TurboLegends.state.rivals.length}));
   assert.equal(begun.phase,'countdown');assert.equal(begun.grid,19);
@@ -41,6 +41,19 @@ const {chromium}=require('playwright');
   });
   assert.ok(clock.simulated>clock.elapsed*.79,'physics must not run in slow motion');
   assert.ok(clock.simulated<clock.elapsed*1.25,'physics clock must not run too fast');
+  const arcade=await page.evaluate(()=>{
+    const g=window.TurboLegends,p=g.state.player,original={...p};
+    const speed=100;
+    p.speed=speed;
+    const before=p.z;
+    window.TurboRacePhysics.vehicle(p,{gas:false,brake:false},g.state.track,{maxSpeed:300,handling:1},1/60);
+    const delta=p.z-before;
+    const pace=window.TurboRacePhysics.worldScale;
+    Object.assign(p,original);
+    return {delta,pace};
+  });
+  assert.ok(arcade.pace>=2.5,'arcade world speed factor must be enabled');
+  assert.ok(arcade.delta>.95,'100 km/h must traverse substantially over 0.95 world units per physics step');
   const perspective=await page.evaluate(()=>{
    const g=window.TurboLegends;
    const points=window.TurboSegmentRoad.sample(g.state);
