@@ -279,7 +279,16 @@ function updateHud(){$('raceFlash').hidden=state.time>state.flashUntil||!state.f
 const cornerAdvice=window.TurboRacePhysics?.cornerLimit(state.player.z+85*physicsScale(),state.track,window.TurboGarage?.stats().handling||1)||225;
 const needsBraking=Math.abs(nextBend)>1.1&&state.player.speed>cornerAdvice+22;
 $('roadWarning').textContent=state.player.offRoad?'⚠ ВНЕ ТРАССЫ · ВЕРНИСЬ НА ДОРОГУ':Math.abs(nextBend)>1.1?(nextBend>0?'↪':'↩')+' ПОВОРОТ · '+Math.round(cornerAdvice)+' КМ/Ч':' ';
-$('roadWarning').classList.toggle('danger',state.player.offRoad||needsBraking);$('draftBadge').hidden=state.player.slipstream<.55||state.phase!=='race';if(state.time-lastBoardAt>.5){lastBoardAt=state.time;const near=state.rivals.map(o=>({name:o.name,gap:(o.z-state.player.z)/physicsScale()})).filter(o=>Math.abs(o.gap)<550).sort((a,b)=>Math.abs(a.gap)-Math.abs(b.gap)).slice(0,3);$('raceNearby').textContent=near.length?near.map(o=>(o.gap>0?'▲ ':'▼ ')+o.name+' '+Math.abs(Math.round(o.gap))+'м').join(' · '):'Свободная трасса'}}
+$('roadWarning').classList.toggle('danger',state.player.offRoad||needsBraking);
+const traction=clamp(state.player.cornerLoad||0,0,2);
+const tractionEl=$('tractionStatus');
+tractionEl.hidden=state.phase!=='race'||(state.player.speed<65&&!state.player.offRoad);
+const tractionPercent=Math.round(clamp(1-traction*.55,0,1)*100);
+$('tractionFill').style.width=tractionPercent+'%';
+$('tractionLabel').textContent=state.player.offRoad?'⚠ ОБОЧИНА':traction>=.95?'⚠ СКОЛЬЖЕНИЕ':traction>=.65?'СЦЕПЛЕНИЕ · ПРЕДЕЛ':'СЦЕПЛЕНИЕ';
+tractionEl.classList.toggle('traction-danger',traction>=.95||state.player.offRoad);
+tractionEl.classList.toggle('traction-warn',traction>=.65&&traction<.95&&!state.player.offRoad);
+$('draftBadge').hidden=state.player.slipstream<.55||state.phase!=='race';if(state.time-lastBoardAt>.5){lastBoardAt=state.time;const near=state.rivals.map(o=>({name:o.name,gap:(o.z-state.player.z)/physicsScale()})).filter(o=>Math.abs(o.gap)<550).sort((a,b)=>Math.abs(a.gap)-Math.abs(b.gap)).slice(0,3);$('raceNearby').textContent=near.length?near.map(o=>(o.gap>0?'▲ ':'▼ ')+o.name+' '+Math.abs(Math.round(o.gap))+'м').join(' · '):'Свободная трасса'}}
 function start(){resetRace();state.phase='countdown';window.TurboGarage?.render();$('garageReward')&&($('garageReward').hidden=true);$('menu').hidden=true;$('finish').hidden=true;$('hud').hidden=false;$('raceFlash').hidden=true;$('lapSplits').hidden=true;$('raceProgress').hidden=false;$('raceLeaderboard').hidden=false;$('countdown').hidden=false;$('countdown').textContent='3';$('pauseBtn').hidden=false;$('touchControls').hidden=false;$('hint').hidden=true;updateHud();}
 function pause(){if(state.phase==='race'){state.phase='pause';$('pauseOverlay').hidden=false;state.keys={};state.touch={}}else if(state.phase==='pause'){state.phase='race';$('pauseOverlay').hidden=true;state.last=performance.now()}}
 function toMenu(){state.phase='menu';window.TurboGarage?.render();$('menu').hidden=false;$('finish').hidden=true;$('pauseOverlay').hidden=true;$('hud').hidden=true;$('raceFlash').hidden=true;$('lapSplits').hidden=true;$('raceProgress').hidden=true;$('raceLeaderboard').hidden=true;$('touchControls').hidden=true;$('pauseBtn').hidden=true;$('hint').hidden=true}
