@@ -14,7 +14,7 @@ const lengths={coast:6500,alpine:7200,desert:6800,night:6900};
 const car=()=>({z:0,x:0,speed:0,nitro:100,health:100,topSpeed:0,steerVelocity:0,lateralVelocity:0,collide:0,slipstream:0});
 const roster=()=>Array.from({length:19},(_,i)=>{
  const ahead=i<10,row=ahead?Math.floor((9-i)/2):Math.floor((i-10)/2);
- const z=ahead?72+row*93+(i%2)*18:-68-row*88-(i%2)*20;
+ const z=(ahead?72+row*93+(i%2)*18:-68-row*88-(i%2)*20)*physics.worldScale;
  const lane=i%2?.48:-.48;
  const pace=(ahead?258+(9-i)*2.9:253-(i-10)*1.8)+(i%4-1.5)*3.8;
  return {id:i,z,lane,baseLane:lane,cruiseLane:lane,speed:pace,velocity:0,
@@ -191,4 +191,26 @@ test('opponent traffic spreads instead of collapsing into one stationary pack',(
  assert.equal(regressions,0,'AI must never teleport backwards');
  assert.equal(overlaps,0,'AI cars must not intersect in the same lane');
  assert.ok(spread>startSpread*.9,'cars should stay distributed');
+});
+
+test('arcade road scrolls faster than a metre-based world without changing indicated km/h',()=>{
+ const track={theme:'coast',length:17550},p=car(),dt=1/60;
+ p.speed=100;
+ const before=p.z;
+ physics.vehicle(p,{gas:false,brake:false,left:false,right:false},track,{maxSpeed:300},dt);
+ const travelled=p.z-before;
+ const expected=p.speed/3.6*dt*physics.worldScale;
+ assert.ok(Math.abs(travelled-expected)<.01,'world advance must use arcade pace');
+ assert.ok(physics.worldScale>=2.5,'at least 2.5x optical world traversal');
+ assert.ok(travelled>.95,'100 km/h should scroll at least 0.95 world units per 60-Hz frame');
+});
+test('CPU and player progress use the same arcade world scale',()=>{
+ const t={theme:'coast',length:17550},dt=1/60,p=car(),r=roster()[0];
+ p.speed=150;r.velocity=150;r.speed=150;
+ const p0=p.z,r0=r.z;
+ physics.vehicle(p,{gas:false},t,{maxSpeed:300},dt);
+ physics.planAI(r,[{...r}],t,dt);
+ const playerDelta=p.z-p0,opponentDelta=r.z-r0;
+ assert.ok(playerDelta>1.7&&opponentDelta>1.7,'both racers traverse world distance at arcade pace');
+ assert.ok(Math.abs(playerDelta-opponentDelta)<.12,'their movement scales must stay synchronized');
 });
