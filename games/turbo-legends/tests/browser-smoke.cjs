@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
   }));
-  assert.ok(before.menu);assert.match(before.version,/3\.1/);assert.equal(before.tracks,4);
+  assert.ok(before.menu);assert.match(before.version,/3\.2/);assert.equal(before.tracks,4);
   // Grip UI is driven by the same physics value as the corner simulation.
   const gripUi=await page.evaluate(()=>{
     const g=window.TurboLegends;
