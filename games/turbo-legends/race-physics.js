@@ -143,17 +143,34 @@ function planAI(o,participants,track,dt){
  o.z+=o.velocity/3.6*dt*ARCADE_PACE;
 }
 function resolveInteractions(state){
- const p=state.player;let hit=null;
+ const p=state.player;
+ let hit=null;
+ // Collisions are contact events, not recurring damage while two cars are
+ // already side-by-side. Relative closing speed sets the actual severity.
+ if(!p.contactIds)p.contactIds=new Set();
+ const contactsNow=new Set();
  for(const o of state.rivals){
-  if(o.finished||p.collide>0||Math.abs(o.z-p.z)>5.3*ARCADE_PACE||Math.abs(o.lane-p.x)>.24)continue;
-  const relative=Math.abs(p.speed-o.velocity),loss=clamp(2+relative*.12,3,21);
+  if(o.finished)continue;
+  const gap=(o.z-p.z)/ARCADE_PACE;
+  const lateral=Math.abs(o.lane-p.x);
+  const touching=Math.abs(gap)<=5.3&&lateral<.24;
+  if(!touching)continue;
+  contactsNow.add(o.id);
+  if(p.contactIds.has(o.id)||(p.collide||0)>0)continue;
+  const relative=Math.abs(p.speed-o.velocity);
+  const overlapDepth=Math.max(0,5.3-Math.abs(gap));
+  // Parallel cars at nearly identical speed should not repeatedly crash.
+  const loss=clamp(1.6+relative*.10+overlapDepth*.20,2,21);
+  const damage=.6+relative*.024;
   p.speed=Math.max(0,p.speed-loss);
-  o.velocity=Math.max(0,o.velocity-loss*.19);
-  p.health=Math.max(20,p.health-(.9+relative*.022));
-  p.collide=.7;hit={impact:relative,other:o};break;
+  o.velocity=Math.max(0,o.velocity-loss*.13);
+  p.health=Math.max(20,p.health-damage);
+  p.collide=.52;
+  hit={impact:relative,other:o,damage,speedLoss:loss};
+  break;
  }
- // Never teleport cars backward: instead match velocity when traffic compresses.
- // Position jumps were perceived as pile-ups and sudden collisions.
+ p.contactIds=contactsNow;
+ // Traffic compresses by matching velocity, never by teleporting backwards.
  const all=state.rivals.filter(o=>!o.finished);
  for(const following of all){
   const leader=all.filter(o=>o!==following&&o.z>=following.z&&o.z-following.z<13*ARCADE_PACE&&
