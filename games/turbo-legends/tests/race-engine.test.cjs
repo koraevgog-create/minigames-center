@@ -214,3 +214,34 @@ test('CPU and player progress use the same arcade world scale',()=>{
  assert.ok(playerDelta>1.7&&opponentDelta>1.7,'both racers traverse world distance at arcade pace');
  assert.ok(Math.abs(playerDelta-opponentDelta)<.12,'their movement scales must stay synchronized');
 });
+
+test('racing AI avoids nearby traffic when selecting an overtaking corridor',()=>{
+ const t={theme:'coast',length:17550},dt=1/60;
+ const driver={id:60,z:0,lane:-.36,baseLane:-.36,cruiseLane:-.36,
+  velocity:260,speed:278,skill:1,aggression:1,passCooldown:0,passTarget:null,finished:false};
+ const ahead={id:61,z:47*physics.worldScale,lane:-.36,velocity:190,speed:190,finished:false};
+ const blocker={id:62,z:5*physics.worldScale,lane:0,velocity:220,speed:230,finished:false};
+ for(let i=0;i<60*3;i++){
+  const snapshot=[{...driver},{...ahead},{...blocker}];
+  physics.planAI(driver,snapshot,t,dt);
+  physics.planAI(ahead,snapshot,t,dt);
+  physics.planAI(blocker,snapshot,t,dt);
+  assert.ok(Number.isFinite(driver.lane)&&Number.isFinite(driver.velocity));
+  assert.ok(Math.abs(driver.lane)<=.78);
+ }
+ assert.ok(driver.z>0);
+});
+test('rivals keep safe progress without backwards jumps through a three minute session',()=>{
+ const t={theme:'alpine',length:19440},r=roster(),dt=1/60;
+ let rewinds=0,illegalOverlaps=0;
+ for(let i=0;i<60*180;i++){
+  const snapshot=r.map(car=>({...car}));
+  for(const car of r){const previous=car.z;physics.planAI(car,snapshot,t,dt);if(car.z<previous)rewinds++;}
+  physics.resolveInteractions({player:car(),rivals:r});
+  for(let a=0;a<r.length;a++)for(let b=a+1;b<r.length;b++){
+   if(Math.abs(r[a].z-r[b].z)<4*physics.worldScale&&Math.abs(r[a].lane-r[b].lane)<.23)illegalOverlaps++;
+  }
+ }
+ assert.equal(rewinds,0);
+ assert.equal(illegalOverlaps,0);
+});
