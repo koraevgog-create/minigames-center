@@ -319,3 +319,21 @@ test('arcade pace and physics maintain numeric grip-load for visual feedback',()
  assert.equal(result.cornerLoad,p.cornerLoad);
  assert.ok(p.cornerLoad>=0&&p.cornerLoad<=2);
 });
+
+test('version 3.2: four distinct themed turn rhythms and no sharp circuit seam',()=>{
+ const themes=['coast','alpine','desert','night'];
+ const signatures=new Set();
+ const counts=[];
+ for(const theme of themes){
+  const t={theme,length:{coast:17550,alpine:19440,desert:18360,night:18630}[theme]};
+  const points=Array.from({length:480},(_,i)=>tracks.curvature(t.length*i/480,t));
+  const signature=points.map(v=>Math.round(v*10)).join(',');
+  signatures.add(signature);
+  counts.push(tracks.profiles[theme].length);
+  assert.ok(points.every(Number.isFinite),'finite curvature '+theme);
+  assert.ok(Math.abs(tracks.curvature(0,t)-tracks.curvature(t.length-.1,t))<.01,'smooth wrap '+theme);
+  assert.ok(tracks.characters[theme]?.features?.length>15,'track identity '+theme);
+ }
+ assert.equal(signatures.size,4,'layouts must not feel interchangeable');
+ assert.ok(counts[1]>counts[0]&&counts[3]>counts[2],'technical tracks need more corners');
+});
