@@ -59,79 +59,80 @@ function vehicle(p,input,track,garage,dt){
  p.z+=p.speed/3.6*dt;
  return {safeSpeed,curve:localCurve,overSpeed:over};
 }
-const LANES=[-.68,-.34,0,.34,.68];
-function laneClear(driver,participants,lane){
- return participants.every(v=>{
-  if(v.id===driver.id||v.finished)return true;
-  const gap=v.z-driver.z;
-  return gap < -20||gap>32||Math.abs(v.lane-lane)>.30;
+const LANES=[-.72,-.36,0,.36,.72];
+function canShift(car,others,lane){
+ return others.every(o=>{
+  if(o.id===car.id||o.finished)return true;
+  const longitudinal=o.z-car.z;
+  return longitudinal < -25 || longitudinal > 45 || Math.abs(o.lane-lane)>.33;
  });
 }
 function planAI(o,participants,track,dt){
  if(o.finished)return;
  dt=clamp(dt,0,1/30);
- const skill=clamp(o.skill||1,.82,1.18);
- const range=clamp(o.velocity/3.6*2.1,85,210);
- const bend=Math.abs(lookAhead(o.z+40,track,range));
- const safe=clamp((301-33*bend)*(.93+.08*skill),205,310);
- let desired=Math.min(o.speed,safe);
- const traffic=participants.filter(v=>v.id!==o.id&&!v.finished&&v.z>o.z&&v.z-o.z<95&&Math.abs(v.lane-o.lane)<.30).sort((a,b)=>a.z-b.z);
- const ahead=traffic[0];
+ const skill=clamp(o.skill||1,.82,1.19);
+ const curveAhead=Math.abs(lookAhead(o.z+50,track,clamp(o.velocity*.65,105,190)));
+ const cornerSpeed=clamp((306-34*curveAhead)*(.95+.055*skill),204,310);
+ let desired=Math.min(o.speed,cornerSpeed);
+ // Maintain an individual cruising lane until there is a real reason to change.
+ // The old code returned to its base lane after every overtake, creating queues.
+ if(!Number.isFinite(o.cruiseLane))o.cruiseLane=o.baseLane;
  o.passCooldown=Math.max(0,(o.passCooldown||0)-dt);
- // Small apex shift makes CPU cars follow bends rather than rigid parallel rails.
- let targetLane=clamp(o.baseLane-corner(o.z+38,track)*.075,-.73,.73);
- if(o.passTarget!=null)targetLane=o.passTarget;
- if(ahead){
-  const gap=ahead.z-o.z;
-  if(gap<50&&o.passTarget==null&&o.passCooldown<=0){
-   const options=LANES.filter(l=>Math.abs(l-o.lane)>.25&&laneClear(o,participants,l));
-   options.sort((a,b)=>Math.abs(a-o.lane)-Math.abs(b-o.lane));
-   if(options.length){o.passTarget=options[0];o.passCooldown=3.5;targetLane=o.passTarget;}
+ const nearest=participants.filter(v=>v.id!==o.id&&!v.finished&&
+     v.z>o.z&&v.z-o.z<110&&Math.abs(v.lane-o.lane)<.32)
+    .sort((x,y)=>x.z-y.z)[0];
+ if(nearest){
+  const gap=nearest.z-o.z;
+  if(gap<67&&o.passCooldown===0&&o.passTarget==null){
+    const free=LANES.filter(l=>Math.abs(l-o.lane)>.24&&canShift(o,participants,l));
+    free.sort((x,y)=>Math.abs(x-o.lane)-Math.abs(y-o.lane));
+    if(free.length){
+      o.cruiseLane=free[0];
+      o.passTarget=free[0];
+      o.passCooldown=4.8+(o.id%4)*.45;
+    }
   }
-  if(Math.abs(o.lane-ahead.lane)<.29&&gap<36){
-    desired=Math.min(desired,Math.max(40,(ahead.velocity||0)+(gap-19)*.85));
+  const inPath=Math.abs(nearest.lane-o.lane)<.34;
+  if(inPath&&gap<Math.max(25,o.velocity*.18)){
+    const followingSpeed=(nearest.velocity??nearest.speed??0)+Math.max(-10,(gap-32)*.27);
+    desired=Math.min(desired,Math.max(35,followingSpeed));
   }
  }
+ // A lane change may be cancelled once, if a vehicle occupies the exact
+ // merge point, but the driver keeps its lane instead of bouncing side-to-side.
  if(o.passTarget!=null){
-  // A committed manoeuvre must not oscillate each frame as the gap narrows.
-  // Abort only if another car is already occupying the destination corridor.
-  const blocked=participants.some(v=>v.id!==o.id&&!v.finished&&
-     Math.abs(v.z-o.z)<10&&Math.abs(v.lane-o.passTarget)<.22);
-  if(blocked){
-   o.passTarget=null;o.passCooldown=2;targetLane=clamp(o.baseLane-corner(o.z+38,track)*.075,-.73,.73);
-  }else if(!ahead&&o.passCooldown<1.2&&Math.abs(o.lane-o.passTarget)<.1){
-   o.passTarget=null;targetLane=o.baseLane;
-  }
+   const danger=participants.some(v=>v.id!==o.id&&!v.finished&&Math.abs(v.z-o.z)<13&&Math.abs(v.lane-o.passTarget)<.25);
+   if(danger){o.cruiseLane=o.lane;o.passTarget=null;o.passCooldown=2.7;}
+   else if(Math.abs(o.lane-o.passTarget)<.05)o.passTarget=null;
  }
- // CPU changes lanes gradually, and plans off a consistent snapshot each frame.
- o.lane=approach(o.lane,clamp(targetLane,-.73,.73),dt*(.19+.06*skill));
+ const bend=corner(o.z+32,track);
+ const apexShift=clamp(-bend*.055,-.10,.10);
+ const wanted=clamp(o.cruiseLane+apexShift,-.78,.78);
+ o.lane=approach(o.lane,wanted,dt*(.16+.09*skill));
  const difference=desired-o.velocity;
- const acceleration=difference>=0?Math.min(26*skill,difference*.58):Math.max(-118,difference*2.4);
- o.braking=acceleration<-8;
- o.velocity=clamp(o.velocity+acceleration*dt,0,o.speed);
+ const accel=difference>0?Math.min(25*skill,difference*.55):Math.max(-132,difference*2.3);
+ o.braking=accel<-8;
+ o.velocity=clamp(o.velocity+accel*dt,0,o.speed);
  o.z+=o.velocity/3.6*dt;
 }
 function resolveInteractions(state){
- const p=state.player;
- let hit=null;
+ const p=state.player;let hit=null;
  for(const o of state.rivals){
   if(o.finished||p.collide>0||Math.abs(o.z-p.z)>5.3||Math.abs(o.lane-p.x)>.24)continue;
-  const relative=Math.abs(p.speed-o.velocity);
-  const loss=clamp(2+relative*.12,3,21);
+  const relative=Math.abs(p.speed-o.velocity),loss=clamp(2+relative*.12,3,21);
   p.speed=Math.max(0,p.speed-loss);
   o.velocity=Math.max(0,o.velocity-loss*.19);
   p.health=Math.max(20,p.health-(.9+relative*.022));
-  p.collide=.70;hit={impact:relative,other:o};
-  break;
+  p.collide=.7;hit={impact:relative,other:o};break;
  }
- const sorted=state.rivals.filter(o=>!o.finished).sort((a,b)=>b.z-a.z);
- for(let i=0;i<sorted.length;i++){
-  const lead=sorted[i];
-  for(let j=i+1;j<sorted.length;j++){
-   const behind=sorted[j],gap=lead.z-behind.z;
-   if(gap>8)break;
-   if(Math.abs(lead.lane-behind.lane)>.22)continue;
-   if(gap<6){behind.z=lead.z-6;behind.velocity=Math.min(behind.velocity,lead.velocity)}
+ // Never teleport cars backward: instead match velocity when traffic compresses.
+ // Position jumps were perceived as pile-ups and sudden collisions.
+ const all=state.rivals.filter(o=>!o.finished);
+ for(const following of all){
+  const leader=all.filter(o=>o!==following&&o.z>=following.z&&o.z-following.z<13&&
+    Math.abs(o.lane-following.lane)<.26).sort((a,b)=>a.z-b.z)[0];
+  if(leader){
+   following.velocity=Math.min(following.velocity,Math.max(0,leader.velocity+(leader.z-following.z-7)*2));
   }
  }
  return hit;
