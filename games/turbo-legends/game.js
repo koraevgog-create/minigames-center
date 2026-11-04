@@ -195,10 +195,11 @@ if(physics){
  const playerSnapshot={id:'player',z:p.z,lane:p.x,velocity:p.speed,finished:false,isPlayer:true};
  // Re-evaluate every car against the same race snapshot rather than a changing order.
  const plans=state.rivals.map(rival=>({...rival}));
+ const trafficSnapshot=[...plans,playerSnapshot];
  for(let i=0;i<state.rivals.length;i++){
   const opponent=state.rivals[i];
   if(opponent.finished)continue;
-  physics.planAI(opponent,plans.concat(playerSnapshot),state.track,dt,state.time);
+  physics.planAI(opponent,trafficSnapshot,state.track,dt,state.time);
   if(opponent.z>=totalLength()){
    opponent.z=totalLength();opponent.finished=true;opponent.finishTime=state.time;
   }
