@@ -72,3 +72,14 @@
 .race-leaderboard,.race-map{backdrop-filter:none;border-color:#b3d4e58c}
 @media(hover:hover) and (pointer:fine){.touch-controls{display:none!important}}
 @media(max-width:660px){.hud .chip,.hud .speed{border-width:1px;box-shadow:2px 2px 0 #0713257a}}
+
+/* Turbo Legends 3.1 — compact real traction indicator */
+.traction-status{margin-top:6px;min-width:132px;max-width:205px;padding:6px 9px;border-radius:7px;background:#0c2438e0;border:1px solid #82bfc77a;color:#b8f1d9;font-size:10px;font-weight:900;letter-spacing:.065em}
+.traction-status[hidden]{display:none!important}
+.traction-meter{height:5px;background:#0a1523;border-radius:12px;overflow:hidden;margin-top:4px;border:1px solid #ffffff24}
+.traction-meter i{display:block;height:100%;width:100%;background:#55dc9f;border-radius:12px;transition:width .16s linear,background-color .16s linear}
+.traction-status.traction-warn{border-color:#f2c471a8;color:#ffdb96}
+.traction-status.traction-warn .traction-meter i{background:#f3c15d}
+.traction-status.traction-danger{border-color:#ef747ca8;color:#ffa5a7}
+.traction-status.traction-danger .traction-meter i{background:#f1606b}
+@media(max-width:660px){.traction-status{padding:4px 7px;font-size:9px;max-width:155px}}
