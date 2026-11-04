@@ -308,3 +308,14 @@ test('difficulty-dependent acceleration factor changes CPU progress without tele
  assert.ok(high.z>low.z+60,'hard driver acceleration should create a measurable gap');
  assert.ok(low.z>0&&high.z>0,'both should move forward');
 });
+
+test('arcade pace and physics maintain numeric grip-load for visual feedback',()=>{
+ const track={theme:'alpine',length:19440},p=car();
+ const speedFactor=physics.worldScale;
+ assert.equal(speedFactor,2.7,'visual improvements must not change world pace');
+ p.speed=210;p.z=track.length*.20;
+ const result=physics.vehicle(p,{gas:true,right:true},track,{maxSpeed:300,handling:1},1/60);
+ assert.ok(Number.isFinite(p.cornerLoad),'HUD must read a finite corner load');
+ assert.equal(result.cornerLoad,p.cornerLoad);
+ assert.ok(p.cornerLoad>=0&&p.cornerLoad<=2);
+});
