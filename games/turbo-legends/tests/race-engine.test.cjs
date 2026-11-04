@@ -245,3 +245,29 @@ test('rivals keep safe progress without backwards jumps through a three minute s
  assert.equal(rewinds,0);
  assert.equal(illegalOverlaps,0);
 });
+
+test('recoverable cornering at arcade speed on every track',()=>{
+ const lengths={coast:17550,alpine:19440,desert:18360,night:18630};
+ for(const theme of Object.keys(lengths)){
+  const t={theme,length:lengths[theme]},p=car(),dt=1/60;
+  let offroad=0,maximumLoad=0;
+  for(let tick=0;tick<60*120;tick++){
+   const result=physics.vehicle(p,{gas:true,left:p.x>.17,right:p.x<-.17},t,{maxSpeed:300,handling:1,acceleration:1},dt);
+   if(p.offRoad)offroad++;
+   maximumLoad=Math.max(maximumLoad,result.cornerLoad);
+   assert.ok(Number.isFinite(p.x)&&Number.isFinite(p.z)&&Number.isFinite(p.lateralVelocity));
+  }
+  assert.ok(maximumLoad>.1,'corners should exert measurable load '+theme);
+  assert.ok(offroad<60*2,'countersteering should keep the car recoverable '+theme);
+  assert.ok(p.z>10000,'arcade world pace must be preserved '+theme);
+ }
+});
+test('steering has proportional effect and releasing it damps lateral motion',()=>{
+ const t={theme:'coast',length:17550},dt=1/60,p=car();
+ p.speed=175;p.z=t.length*.12;
+ for(let i=0;i<30;i++)physics.vehicle(p,{gas:true,right:true},t,{maxSpeed:300,handling:1},dt);
+ const drift=p.lateralVelocity;
+ assert.ok(drift>.15,'steering should generate a rightwards response');
+ for(let i=0;i<45;i++)physics.vehicle(p,{gas:false,left:false,right:false},t,{maxSpeed:300,handling:1},dt);
+ assert.ok(p.lateralVelocity<drift*.35,'car should settle when steering is released');
+});
