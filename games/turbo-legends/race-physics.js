@@ -75,7 +75,7 @@ function planAI(o,participants,track,dt){
  const bend=Math.abs(lookAhead(o.z+40,track,range));
  const safe=clamp((301-33*bend)*(.93+.08*skill),205,310);
  let desired=Math.min(o.speed,safe);
- const traffic=participants.filter(v=>v.id!==o.id&&!v.finished&&v.z>o.z&&v.z-o.z<95&&Math.abs(v.lane-o.lane)<.27).sort((a,b)=>a.z-b.z);
+ const traffic=participants.filter(v=>v.id!==o.id&&!v.finished&&v.z>o.z&&v.z-o.z<95&&Math.abs(v.lane-o.lane)<.30).sort((a,b)=>a.z-b.z);
  const ahead=traffic[0];
  o.passCooldown=Math.max(0,(o.passCooldown||0)-dt);
  let targetLane=o.baseLane;
@@ -92,9 +92,13 @@ function planAI(o,participants,track,dt){
   }
  }
  if(o.passTarget!=null){
-  if(!laneClear(o,participants,o.passTarget)){
+  // A committed manoeuvre must not oscillate each frame as the gap narrows.
+  // Abort only if another car is already occupying the destination corridor.
+  const blocked=participants.some(v=>v.id!==o.id&&!v.finished&&
+     Math.abs(v.z-o.z)<10&&Math.abs(v.lane-o.passTarget)<.22);
+  if(blocked){
    o.passTarget=null;o.passCooldown=2;targetLane=o.baseLane;
-  }else if(!ahead&&o.passCooldown<1.2){
+  }else if(!ahead&&o.passCooldown<1.2&&Math.abs(o.lane-o.passTarget)<.1){
    o.passTarget=null;targetLane=o.baseLane;
   }
  }
