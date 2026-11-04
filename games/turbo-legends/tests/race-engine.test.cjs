@@ -143,3 +143,24 @@ test('CPU cars maintain separation and the race permits gradual overtakes',()=>{
  assert.ok(rankAt120>=1&&rankAt120<=20);
  assert.ok(rivals.every(o=>o.z>1000&&Number.isFinite(o.lane)));
 });
+
+test('CPU overtake keeps lateral movement bounded and does not oscillate wildly',()=>{
+ const t={theme:'coast',length:6500},dt=1/60;
+ const leader={id:0,z:195,lane:-.34,baseLane:-.34,velocity:170,speed:170,skill:1,passCooldown:0,passTarget:null,finished:false};
+ const pursuer={id:1,z:160,lane:-.34,baseLane:-.34,velocity:205,speed:275,skill:1,passCooldown:0,passTarget:null,finished:false};
+ let previous=pursuer.lane,maxStep=0,turns=0,lastDirection=0;
+ for(let i=0;i<60*9;i++){
+  const snapshot=[{...leader},{...pursuer}];
+  physics.planAI(pursuer,snapshot,t,dt);
+  physics.planAI(leader,snapshot,t,dt);
+  const delta=pursuer.lane-previous;
+  maxStep=Math.max(maxStep,Math.abs(delta));
+  const direction=Math.sign(delta);
+  if(direction&&lastDirection&&direction!==lastDirection)turns++;
+  if(direction)lastDirection=direction;
+  previous=pursuer.lane;
+ }
+ assert.ok(maxStep<.012,'lane movement must be smooth every physics tick');
+ assert.ok(turns<8,'avoid lane oscillation');
+ assert.ok(pursuer.z>160,'AI makes progress');
+});
