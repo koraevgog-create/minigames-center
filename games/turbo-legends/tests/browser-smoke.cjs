@@ -13,7 +13,7 @@ const {chromium}=require('playwright');
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
   }));
-  assert.ok(before.menu);assert.match(before.version,/2\.6/);assert.equal(before.tracks,4);
+  assert.ok(before.menu);assert.match(before.version,/2\.7/);assert.equal(before.tracks,4);
   await page.click('#start');
   const begun=await page.evaluate(()=>({phase:window.TurboLegends.state.phase,grid:window.TurboLegends.state.rivals.length}));
   assert.equal(begun.phase,'countdown');assert.equal(begun.grid,19);
