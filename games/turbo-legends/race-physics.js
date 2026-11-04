@@ -3,6 +3,9 @@
  * Shared corner geometry drives steering and CPU speed planning. */
 (()=>{'use strict';
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+// One simulated metre advances several arcade road units, shared by every racer.
+// This changes actual world motion, not just texture density or camera effects.
+const ARCADE_PACE=2.7;
 const approach=(from,to,step)=>from<to?Math.min(to,from+step):Math.max(to,from-step);
 const model=()=>window.TurboTrackModel;
 const corner=(z,track)=>model()?.curvature(z,track)||0;
@@ -56,7 +59,7 @@ function vehicle(p,input,track,garage,dt){
  // Fast corners scrub speed even if the player holds full throttle.
  const scrub=Math.abs(localCurve)>1.0?Math.max(0,over-.10)*Math.abs(localCurve)*16:0;
  p.speed=Math.max(0,p.speed-scrub*dt);
- p.z+=p.speed/3.6*dt;
+ p.z+=p.speed/3.6*dt*ARCADE_PACE;
  return {safeSpeed,curve:localCurve,overSpeed:over};
 }
 const LANES=[-.72,-.36,0,.36,.72];
@@ -64,7 +67,7 @@ function canShift(car,others,lane){
  return others.every(o=>{
   if(o.id===car.id||o.finished)return true;
   const longitudinal=o.z-car.z;
-  return longitudinal < -25 || longitudinal > 45 || Math.abs(o.lane-lane)>.33;
+  return longitudinal < -25*ARCADE_PACE || longitudinal > 45*ARCADE_PACE || Math.abs(o.lane-lane)>.33;
  });
 }
 function planAI(o,participants,track,dt){
@@ -79,11 +82,11 @@ function planAI(o,participants,track,dt){
  if(!Number.isFinite(o.cruiseLane))o.cruiseLane=o.baseLane;
  o.passCooldown=Math.max(0,(o.passCooldown||0)-dt);
  const nearest=participants.filter(v=>v.id!==o.id&&!v.finished&&
-     v.z>o.z&&v.z-o.z<110&&Math.abs(v.lane-o.lane)<.32)
+     v.z>o.z&&v.z-o.z<110*ARCADE_PACE&&Math.abs(v.lane-o.lane)<.32)
     .sort((x,y)=>x.z-y.z)[0];
  if(nearest){
   const gap=nearest.z-o.z;
-  if(gap<67&&o.passCooldown===0&&o.passTarget==null){
+  if(gap<67*ARCADE_PACE&&o.passCooldown===0&&o.passTarget==null){
     const free=LANES.filter(l=>Math.abs(l-o.lane)>.24&&canShift(o,participants,l));
     free.sort((x,y)=>Math.abs(x-o.lane)-Math.abs(y-o.lane));
     if(free.length){
@@ -93,15 +96,15 @@ function planAI(o,participants,track,dt){
     }
   }
   const inPath=Math.abs(nearest.lane-o.lane)<.34;
-  if(inPath&&gap<Math.max(25,o.velocity*.18)){
-    const followingSpeed=(nearest.velocity??nearest.speed??0)+Math.max(-10,(gap-32)*.27);
+  if(inPath&&gap<Math.max(25,o.velocity*.18)*ARCADE_PACE){
+    const followingSpeed=(nearest.velocity??nearest.speed??0)+Math.max(-10,(gap/ARCADE_PACE-32)*.27);
     desired=Math.min(desired,Math.max(35,followingSpeed));
   }
  }
  // A lane change may be cancelled once, if a vehicle occupies the exact
  // merge point, but the driver keeps its lane instead of bouncing side-to-side.
  if(o.passTarget!=null){
-   const danger=participants.some(v=>v.id!==o.id&&!v.finished&&Math.abs(v.z-o.z)<13&&Math.abs(v.lane-o.passTarget)<.25);
+   const danger=participants.some(v=>v.id!==o.id&&!v.finished&&Math.abs(v.z-o.z)<13*ARCADE_PACE&&Math.abs(v.lane-o.passTarget)<.25);
    if(danger){o.cruiseLane=o.lane;o.passTarget=null;o.passCooldown=2.7;}
    else if(Math.abs(o.lane-o.passTarget)<.05)o.passTarget=null;
  }
@@ -113,12 +116,12 @@ function planAI(o,participants,track,dt){
  const accel=difference>0?Math.min(25*skill,difference*.55):Math.max(-132,difference*2.3);
  o.braking=accel<-8;
  o.velocity=clamp(o.velocity+accel*dt,0,o.speed);
- o.z+=o.velocity/3.6*dt;
+ o.z+=o.velocity/3.6*dt*ARCADE_PACE;
 }
 function resolveInteractions(state){
  const p=state.player;let hit=null;
  for(const o of state.rivals){
-  if(o.finished||p.collide>0||Math.abs(o.z-p.z)>5.3||Math.abs(o.lane-p.x)>.24)continue;
+  if(o.finished||p.collide>0||Math.abs(o.z-p.z)>5.3*ARCADE_PACE||Math.abs(o.lane-p.x)>.24)continue;
   const relative=Math.abs(p.speed-o.velocity),loss=clamp(2+relative*.12,3,21);
   p.speed=Math.max(0,p.speed-loss);
   o.velocity=Math.max(0,o.velocity-loss*.19);
@@ -129,13 +132,13 @@ function resolveInteractions(state){
  // Position jumps were perceived as pile-ups and sudden collisions.
  const all=state.rivals.filter(o=>!o.finished);
  for(const following of all){
-  const leader=all.filter(o=>o!==following&&o.z>=following.z&&o.z-following.z<13&&
+  const leader=all.filter(o=>o!==following&&o.z>=following.z&&o.z-following.z<13*ARCADE_PACE&&
     Math.abs(o.lane-following.lane)<.26).sort((a,b)=>a.z-b.z)[0];
   if(leader){
-   following.velocity=Math.min(following.velocity,Math.max(0,leader.velocity+(leader.z-following.z-7)*2));
+   following.velocity=Math.min(following.velocity,Math.max(0,leader.velocity+((leader.z-following.z)/ARCADE_PACE-7)*2));
   }
  }
  return hit;
 }
-window.TurboRacePhysics={vehicle,planAI,resolveInteractions,cornerLimit};
+window.TurboRacePhysics={vehicle,planAI,resolveInteractions,cornerLimit,worldScale:ARCADE_PACE};
 })();
