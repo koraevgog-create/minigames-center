@@ -215,6 +215,56 @@ function cars(state,pts){
   car(sideX,bottom,147,r.color,0,r.braking,false,r.id%4);
  }
 }
+function drivingEffects(state){
+ if(state.phase!=='race')return;
+ const p=state.player,load=p.cornerLoad||0;
+ const speed=clamp(p.speed/300,0,1.35),t=state.time;
+ // All effects are derived from actual inputs/traction, not arbitrary loops.
+ const steering=Math.abs(p.lateralVelocity||0);
+ const sliding=clamp((load-.7)*1.25+Math.max(0,steering-.65)*.65,0,.9);
+ const dust=p.offRoad?clamp(.18+speed*.62,0,.85):0;
+ const braking=!!(state.keys.brake||state.touch.brake)&&p.speed>40;
+ if(dust>0||sliding>.06){
+  const amount=p.offRoad?13:Math.round(4+sliding*9);
+  for(let i=0;i<amount;i++){
+   const seed=i*43.31;
+   const life=mod(t*(2+speed*3)+i*.371,1);
+   const spread=(18+i*9)*life;
+   const y=H-20-life*(70+speed*90);
+   const x=W*.5+Math.sin(seed)*spread*2+(p.lateralVelocity||0)*-26*life;
+   const size=(p.offRoad?11:4)*(1-life)*(.45+speed);
+   c.fillStyle=p.offRoad?'rgba(203,177,131,'+((1-life)*dust*.42)+')':'rgba(193,213,226,'+((1-life)*sliding*.30)+')';
+   c.beginPath();c.arc(x,y,Math.max(.5,size),0,Math.PI*2);c.fill();
+  }
+ }
+ // When braking, road-relative skid strokes flow out from underneath the car.
+ if(braking&&p.speed>105){
+  c.strokeStyle='rgba(19,28,36,'+(speed*.36)+')';
+  c.lineWidth=2+speed*2;
+  for(const side of [-1,1]){
+   const x=W*.5+side*58;
+   const slide=(p.lateralVelocity||0)*30;
+   c.beginPath();c.moveTo(x,H-4);c.quadraticCurveTo(x-slide*.5,H-40,x-slide,H-95);c.stroke();
+  }
+ }
+ // Peripheral streaks are screen-space feedback; leave central road readable.
+ if(p.speed>130){
+  const intensity=clamp((p.speed-130)/180,0,1);
+  c.lineWidth=1.1+intensity*1.3;
+  for(let i=0;i<15;i++){
+   const side=i%2?-1:1;
+   const lane=i*41+17;
+   const y=mod(lane+t*(155+p.speed*1.8),H+120)-60;
+   const x=W*.5+side*(W*.34+i%5*27);
+   c.strokeStyle='rgba(235,244,249,'+(.018+intensity*.09)+')';
+   c.beginPath();c.moveTo(x,y);c.lineTo(x+side*(9+intensity*12),y+14+intensity*34);c.stroke();
+  }
+ }
+ if(p.boosting){
+  c.fillStyle='rgba(83,199,255,.08)';
+  c.fillRect(0,0,W,8);
+ }
+}
 function weather(state){
  const theme=state.track.theme;
  if(theme==='alpine'||theme==='night'){
@@ -235,7 +285,7 @@ function render(state,canvas,out){
  const pal=palettes[state.track.theme]||palettes.coast;
  c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
  scenery(state,pal);
- const pts=model(state);asphalt(state,pal,pts);roadsideReflectors(state,pts);roadside(state,pts);window.TurboRaceEvents?.draw(state,c,pts);cars(state,pts);weather(state);
+ const pts=model(state);asphalt(state,pal,pts);roadsideReflectors(state,pts);roadside(state,pts);window.TurboRaceEvents?.draw(state,c,pts);cars(state,pts);drivingEffects(state);weather(state);
  if(state.phase==='pause'){c.fillStyle='#071322a1';c.fillRect(0,0,W,H);c.fillStyle='#f5ebd2';c.font='900 48px system-ui';c.textAlign='center';c.fillText('ПАУЗА',W/2,H/2)}
  const dpr=Math.min(devicePixelRatio||1,2),bw=Math.max(320,innerWidth),bh=Math.max(300,innerHeight);
  if(canvas.width!==Math.round(bw*dpr)||canvas.height!==Math.round(bh*dpr)){canvas.width=Math.round(bw*dpr);canvas.height=Math.round(bh*dpr)}
