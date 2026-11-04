@@ -183,7 +183,7 @@ function car(x,bottom,width,color,lean,braking,player,variant=0){
 function cars(state,pts){
  const p=state.player;
  const cars=state.rivals.map(r=>({r,d:r.z-p.z}))
-   .filter(o=>o.d>5&&o.d<MAX-80).sort((a,b)=>b.d-a.d);
+   .filter(o=>o.d>=8&&o.d<MAX-80).sort((a,b)=>b.d-a.d);
  for(const {r,d} of cars){
   const idx=clamp(Math.floor(d/STEP),0,pts.length-2),f=(d-idx*STEP)/STEP;
   const a=pts[idx],b=pts[idx+1];if(!a||!b)continue;
@@ -202,6 +202,17 @@ function cars(state,pts){
  }
  const px=W*.5+p.x*12+pulse,py=H-8+Math.abs(pulse)*.10;
  car(px,py,176,p.color,lean,!!(state.keys.brake||state.touch.brake),true,1);
+ // Cars in the last metres of an overtake stay alongside the player instead
+ // of vanishing at the 5-metre rendering cutoff.
+ const alongside=state.rivals.filter(r=>!r.finished&&r.z-p.z>-14&&r.z-p.z<8&&Math.abs(r.lane-p.x)>.23)
+   .sort((a,b)=>b.z-a.z);
+ for(const r of alongside){
+  const dz=r.z-p.z;
+  const pos=(r.lane-p.x)*247;
+  const sideX=W*.5+pos;
+  const bottom=clamp(H-24-dz*1.7,H-90,H+28);
+  car(sideX,bottom,147,r.color,0,r.braking,false,r.id%4);
+ }
 }
 function weather(state){
  const theme=state.track.theme;
