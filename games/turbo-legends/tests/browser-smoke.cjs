@@ -13,7 +13,35 @@ const {chromium}=require('playwright');
    menu:!document.getElementById('menu').hidden,version:document.querySelector('.version').textContent,
    tracks:document.getElementById('track').options.length
   }));
-  assert.ok(before.menu);assert.match(before.version,/2\.9/);assert.equal(before.tracks,4);
+  assert.ok(before.menu);assert.match(before.version,/3\.0/);assert.equal(before.tracks,4);
+  // Difficulty must alter race opponents, not just a menu label.
+  const tuning=await page.evaluate(()=>{
+    const g=window.TurboLegends;
+    const read=mode=>{
+      g.toMenu();
+      document.getElementById('difficulty').value=mode;
+      g.start();
+      return {speed:g.state.rivals[0].speed,acceleration:g.state.rivals[0].accelerationMultiplier,skill:g.state.rivals[0].skill};
+    };
+    const easy=read('easy'),normal=read('normal'),hard=read('hard');
+    g.toMenu();
+    document.getElementById('difficulty').value='normal';
+    return {easy,normal,hard};
+  });
+  assert.ok(tuning.easy.speed<tuning.normal.speed&&tuning.normal.speed<tuning.hard.speed);
+  assert.ok(tuning.easy.acceleration<tuning.normal.acceleration&&tuning.normal.acceleration<tuning.hard.acceleration);
+  assert.ok(tuning.easy.skill<tuning.normal.skill&&tuning.normal.skill<tuning.hard.skill);
+  const rewards=await page.evaluate(()=>{
+    const g=window.TurboLegends;
+    g.state.player.health=100;
+    g.state.raceStats={contacts:0,closePasses:7,overtakes:8,longestDraft:7};
+    const clean=g.drivingBonus(4);
+    g.state.raceStats.contacts=1;
+    const contact=g.drivingBonus(4);
+    return {clean,contact};
+  });
+  assert.ok(rewards.clean.total>rewards.contact.total);
+  assert.equal(rewards.clean.total-rewards.contact.total,350);
   await page.click('#start');
   const begun=await page.evaluate(()=>({phase:window.TurboLegends.state.phase,grid:window.TurboLegends.state.rivals.length}));
   assert.equal(begun.phase,'countdown');assert.equal(begun.grid,19);
@@ -70,11 +98,14 @@ const {chromium}=require('playwright');
   const final=await page.evaluate(()=>({phase:window.TurboLegends.state.phase,
    finishVisible:!document.getElementById('finish').hidden,
    rows:document.querySelectorAll('#results .result-row').length,
-   stats:document.querySelector('.race-summary-v1')?.textContent||''}));
+   stats:document.querySelector('.race-summary-v1')?.textContent||'',
+   bonus:document.querySelectorAll('.race-summary-v1')[1]?.textContent||''}));
   assert.equal(final.phase,'finish');
   assert.ok(final.finishVisible);assert.equal(final.rows,20);
   assert.match(final.stats,/Обгоны:/);
   assert.match(final.stats,/Контакты:/);
+  assert.match(final.bonus,/Бонус за вождение:/);
+  assert.match(final.stats,/Места по кругам:/);
   assert.deepEqual(errors,[],'no browser JavaScript exceptions');
   console.log(JSON.stringify({success:true,before,progress,final}));
  }finally{await browser.close()}
