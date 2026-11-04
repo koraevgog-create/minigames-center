@@ -66,56 +66,72 @@ const LANES=[-.72,-.36,0,.36,.72];
 function canShift(car,others,lane){
  return others.every(o=>{
   if(o.id===car.id||o.finished)return true;
-  const longitudinal=o.z-car.z;
-  return longitudinal < -25*ARCADE_PACE || longitudinal > 45*ARCADE_PACE || Math.abs(o.lane-lane)>.33;
+  const dz=(o.z-car.z)/ARCADE_PACE;
+  // Check the entire lane-change corridor, not only the destination point.
+  const corridor=Math.min(car.lane,lane)-.24<=o.lane&&o.lane<=Math.max(car.lane,lane)+.24;
+  return !corridor||dz < -17 || dz > 41;
  });
 }
 function planAI(o,participants,track,dt){
  if(o.finished)return;
  dt=clamp(dt,0,1/30);
  const skill=clamp(o.skill||1,.82,1.19);
+ const aggression=clamp(o.aggression??(.85+(o.id%7)*.055),.70,1.35);
  const curveAhead=Math.abs(lookAhead(o.z+50*ARCADE_PACE,track,clamp(o.velocity*.65,105,190)*ARCADE_PACE));
- const cornerSpeed=clamp((306-34*curveAhead)*(.95+.055*skill),204,310);
- let desired=Math.min(o.speed,cornerSpeed);
- // Maintain an individual cruising lane until there is a real reason to change.
- // The old code returned to its base lane after every overtake, creating queues.
+ const cornerSpeed=clamp((308-34*curveAhead)*(.95+.055*skill),204,310);
+ const cruiseSpeed=Math.min(o.speed,cornerSpeed);
+ let desired=cruiseSpeed;
  if(!Number.isFinite(o.cruiseLane))o.cruiseLane=o.baseLane;
  o.passCooldown=Math.max(0,(o.passCooldown||0)-dt);
- const nearest=participants.filter(v=>v.id!==o.id&&!v.finished&&
-     v.z>o.z&&v.z-o.z<110*ARCADE_PACE&&Math.abs(v.lane-o.lane)<.32)
-    .sort((x,y)=>x.z-y.z)[0];
+ const inFront=participants.filter(v=>v.id!==o.id&&!v.finished&&
+     v.z>o.z&&v.z-o.z<130*ARCADE_PACE&&Math.abs(v.lane-o.lane)<.33)
+     .sort((x,y)=>x.z-y.z)[0];
+ const nearest=inFront;
  if(nearest){
-  const gap=nearest.z-o.z;
-  if(gap<67*ARCADE_PACE&&o.passCooldown===0&&o.passTarget==null){
-    const free=LANES.filter(l=>Math.abs(l-o.lane)>.24&&canShift(o,participants,l));
-    free.sort((x,y)=>Math.abs(x-o.lane)-Math.abs(y-o.lane));
-    if(free.length){
-      o.cruiseLane=free[0];
-      o.passTarget=free[0];
-      o.passCooldown=4.8+(o.id%4)*.45;
+  const gap=(nearest.z-o.z)/ARCADE_PACE;
+  const closing=o.velocity-(nearest.velocity||0);
+  if(gap<70&&closing>-6&&o.passCooldown<=0&&o.passTarget==null){
+    const candidates=LANES.filter(l=>Math.abs(l-o.lane)>.27&&canShift(o,participants,l));
+    // Prefer the smaller lateral move, but vary preferences per driver.
+    candidates.sort((a,b)=>(Math.abs(a-o.lane)-Math.abs(b-o.lane))+
+      (o.id%2?1:-1)*(a-b)*.025);
+    if(candidates.length){
+      o.passTarget=candidates[0];
+      o.passCooldown=4.3+.8/aggression;
     }
   }
-  const inPath=Math.abs(nearest.lane-o.lane)<.34;
-  if(inPath&&gap<Math.max(25,o.velocity*.18)*ARCADE_PACE){
-    const followingSpeed=(nearest.velocity??nearest.speed??0)+Math.max(-10,(gap/ARCADE_PACE-32)*.27);
-    desired=Math.min(desired,Math.max(35,followingSpeed));
+  const sameCorridor=Math.abs(o.lane-nearest.lane)<.35;
+  if(sameCorridor){
+    // Continuous car following: no instant brake to 35 km/h at close distance.
+    // Leaving room for the driver in front is more important than top speed.
+    const desiredGap=16+o.velocity*.11;
+    if(gap<desiredGap+13){
+      const leaderSpeed=nearest.velocity??0;
+      desired=Math.min(desired,Math.max(50,leaderSpeed+clamp((gap-desiredGap)*.95,-35,15)));
+    }
   }
  }
- // A lane change may be cancelled once, if a vehicle occupies the exact
- // merge point, but the driver keeps its lane instead of bouncing side-to-side.
+ // Commit to a pass and settle in the new lane rather than weaving back.
  if(o.passTarget!=null){
-   const danger=participants.some(v=>v.id!==o.id&&!v.finished&&Math.abs(v.z-o.z)<13*ARCADE_PACE&&Math.abs(v.lane-o.passTarget)<.25);
-   if(danger){o.cruiseLane=o.lane;o.passTarget=null;o.passCooldown=2.7;}
-   else if(Math.abs(o.lane-o.passTarget)<.05)o.passTarget=null;
+  const target=o.passTarget;
+  const blocked=participants.some(v=>v.id!==o.id&&!v.finished&&
+   Math.abs(v.z-o.z)<13*ARCADE_PACE&&Math.abs(v.lane-target)<.23);
+  if(blocked&&Math.abs(o.lane-target)>.17){
+    o.passTarget=null;o.passCooldown=2.2;
+  }else if(Math.abs(o.lane-target)<.04){
+    o.cruiseLane=target;o.passTarget=null;
+    o.passCooldown=Math.max(o.passCooldown,2);
+  }
  }
  const bend=corner(o.z+32*ARCADE_PACE,track);
  const apexShift=clamp(-bend*.055,-.10,.10);
- const wanted=clamp(o.cruiseLane+apexShift,-.78,.78);
- o.lane=approach(o.lane,wanted,dt*(.16+.09*skill));
- const difference=desired-o.velocity;
- const accel=difference>0?Math.min(25*skill,difference*.55):Math.max(-132,difference*2.3);
- o.braking=accel<-8;
- o.velocity=clamp(o.velocity+accel*dt,0,o.speed);
+ const laneTarget=clamp((o.passTarget??o.cruiseLane)+apexShift,-.78,.78);
+ // Each racer has a different, bounded lateral response.
+ o.lane=approach(o.lane,laneTarget,dt*(.17+.09*skill)*aggression);
+ const diff=desired-o.velocity;
+ const acceleration=diff>0?Math.min((26+o.id%4)*skill,diff*.58):Math.max(-119,diff*2.1);
+ o.braking=acceleration<-10;
+ o.velocity=clamp(o.velocity+acceleration*dt,0,o.speed);
  o.z+=o.velocity/3.6*dt*ARCADE_PACE;
 }
 function resolveInteractions(state){
