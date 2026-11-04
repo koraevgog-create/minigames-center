@@ -271,3 +271,27 @@ test('steering has proportional effect and releasing it damps lateral motion',()
  for(let i=0;i<45;i++)physics.vehicle(p,{gas:false,left:false,right:false},t,{maxSpeed:300,handling:1},dt);
  assert.ok(p.lateralVelocity<drift*.35,'car should settle when steering is released');
 });
+
+test('sustained overlap creates one collision event until cars separate',()=>{
+ const p={...car(),speed:190,z:100,x:0,lateralVelocity:0,collide:0};
+ const op={id:71,z:103,lane:0,velocity:170,finished:false};
+ const state={player:p,rivals:[op]};
+ const first=physics.resolveInteractions(state);
+ assert.ok(first&&first.damage>0);
+ const health=p.health;
+ for(let i=0;i<30;i++){p.collide=0;assert.equal(physics.resolveInteractions(state),null)}
+ assert.equal(p.health,health,'prolonged side contact should not repeatedly drain health');
+ op.lane=.8;physics.resolveInteractions(state);
+ op.lane=0;p.collide=0;
+ const second=physics.resolveInteractions(state);
+ assert.ok(second,'a fresh contact after separation should count again');
+ assert.ok(p.health<health);
+});
+test('two racers driving nearly together do not get a large collision penalty',()=>{
+ const p={...car(),z:220,x:0,speed:180,collide:0};
+ const op={id:72,z:221,lane:0,velocity:178,finished:false};
+ const hit=physics.resolveInteractions({player:p,rivals:[op]});
+ assert.ok(hit);
+ assert.ok(hit.speedLoss<6);
+ assert.equal(p.x,0);
+});
