@@ -167,7 +167,8 @@ function createOpponents(){
    return {id:i,name:names[i],color:colors[i],lane,z,speed:pace*multiplier,
     velocity:0,drive:(i*7.13)%6,baseLane:lane,passTarget:null,
     passCooldown:.5+(i%4)*.6,braking:false,finished:false,finishTime:0,
-    skill:.99+(9-i)*.003+(i%3-1)*.018,cruiseLane:lane};
+    skill:.99+(9-i)*.003+(i%3-1)*.018,cruiseLane:lane,
+    aggression:.78+(i%7)*.075,passingStyle:i%3};
  });
 }
 function showRecord(){const id=$('track').value,d=bestRecords[id];$('bestRecord').textContent=d?'🏆 Лучший заезд: '+formatTime(d.time)+' · место '+d.rank+'/20'+(d.bestLap?' · лучший круг '+formatTime(d.bestLap):''):'🏆 Лучший результат: ещё не установлен'}
